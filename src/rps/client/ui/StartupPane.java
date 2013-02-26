@@ -6,6 +6,7 @@ import static rps.client.Application.showMessage;
 import static rps.network.NetworkUtil.getIPV4Addresses;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -40,12 +41,15 @@ public class StartupPane {
 	private final JTextField joinAddr = new JTextField();
 
 	private final JLabel aiLabel = new JLabel("AIs:");
-	private final JComboBox<GameListener> comboAI = new JComboBox<GameListener>();
+	private final JComboBox<GameListener> comboAi = new JComboBox<GameListener>();
 
 	private final JButton startBtn = new JButton("Start");
 
 	private final UIController uiController;
 	private final GameController gameController;
+	
+	private final int rowHeight = 30;
+	private final int colWidth = 40;
 
 	private JRadioButton radioHost;
 	private JRadioButton radioJoin;
@@ -57,10 +61,10 @@ public class StartupPane {
 		this.uiController = uiController;
 		this.gameController = gameController;
 
-		comboAI.setModel(new DefaultComboBoxModel<GameListener>(ais));
+		comboAi.setModel(new DefaultComboBoxModel<GameListener>(ais));
 		hostIP.setModel(new DefaultComboBoxModel<String>(getIPV4Addresses()));
 
-		connectionPane.setLayout(new BoxLayout(connectionPane, Y_AXIS));
+		connectionPane.setLayout(null);
 
 		ButtonGroup group = new ButtonGroup();
 		radioHost = new JRadioButton();
@@ -70,14 +74,38 @@ public class StartupPane {
 		group.add(radioJoin);
 		group.add(radioAi);
 		radioHost.setSelected(true);
+		
+		connectionPane.setPreferredSize(new Dimension(780, 740));
 
-		addEntry(connectionPane, null, playerLabel, playerName);
-		addEntry(connectionPane, radioHost, hostLabel, hostIP);
-		addEntry(connectionPane, radioJoin, joinLabel, joinAddr);
-		addEntry(connectionPane, radioAi, aiLabel, comboAI);
-
+		playerLabel.setBounds(2*colWidth, rowHeight, 100, 20);
+		playerName.setBounds(2*colWidth+100, rowHeight, 150, 20);
+		connectionPane.add(playerLabel);
+		connectionPane.add(playerName);
+		
+		radioHost.setBounds(colWidth, 2*rowHeight, 20, 20);
+		hostLabel.setBounds(2*colWidth, 2*rowHeight, 100, 20);
+		hostIP.setBounds(2*colWidth+100, 2*rowHeight, 150, 20);
+		connectionPane.add(radioHost);
+		connectionPane.add(hostLabel);
+		connectionPane.add(hostIP);
+		
+		radioJoin.setBounds(colWidth, 3*rowHeight,20,20);
+		joinLabel.setBounds(2*colWidth, 3*rowHeight, 100, 20);
+		joinAddr.setBounds(2*colWidth+100,3*rowHeight,150,20 );
+		connectionPane.add(radioJoin);
+		connectionPane.add(joinLabel);
+		connectionPane.add(joinAddr);
+		
+		radioAi.setBounds(colWidth, 4*rowHeight,20,20);
+		aiLabel.setBounds(2*colWidth, 4*rowHeight, 100, 20);
+		comboAi.setBounds(2*colWidth+100,4*rowHeight,150,20 );
+		connectionPane.add(radioAi);
+		connectionPane.add(aiLabel);
+		connectionPane.add(comboAi);
+		
+		startBtn.setBounds(3*colWidth, 5*rowHeight, 80, 30);
 		connectionPane.add(startBtn);
-
+	
 		parent.add(connectionPane);
 
 		bindActions();
@@ -111,7 +139,7 @@ public class StartupPane {
 						String host = joinAddr.getText().trim();
 						gameController.startJoinedGame(getPlayer(), host);
 					} else {
-						GameListener ai = (GameListener) comboAI.getSelectedItem();
+						GameListener ai = (GameListener) comboAi.getSelectedItem();
 						gameController.startAIGame(getPlayer(), ai);
 					}
 				} catch (IllegalArgumentException ex) {

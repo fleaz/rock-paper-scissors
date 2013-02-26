@@ -10,7 +10,7 @@ public class start_game {
 	public static Vector<GameListener> ais = new Vector<GameListener>();
 
 	public static void main(String[] args) {
-		showWarningIfLinuxBox();
+		//showWarningIfLinuxBox();  Works on Linux without this Hack!
 		registerAIs();
 		startUI();
 	}
@@ -25,14 +25,14 @@ public class start_game {
 		new Application(ais);
 	}
 
-	private static void showWarningIfLinuxBox() {
-		String osname = System.getProperty("os.name", "generic").toLowerCase();
-		if (osname.startsWith("linux")) {
-			String warningMessage = "WARNING!\n" + "Apparently you are running a linux box.\n"
-					+ "You may need to set the \"java.rmi.server.hostname\" system property\n"
-					+ "to your IP address, when starting the VM. For example:\n" + ""
-					+ "-Djava.rmi.server.hostname=192.168.1.50\n";
-			System.err.println(warningMessage);
-		}
-	}
+//	private static void showWarningIfLinuxBox() {
+//		String osname = System.getProperty("os.name", "generic").toLowerCase();
+//		if (osname.startsWith("linux")) {
+//			String warningMessage = "WARNING!\n" + "Apparently you are running a linux box.\n"
+//					+ "You may need to set the \"java.rmi.server.hostname\" system property\n"
+//					+ "to your IP address, when starting the VM. For example:\n" + ""
+//					+ "-Djava.rmi.server.hostname=192.168.1.50\n";
+//			System.err.println(warningMessage);
+//		}
+//	}
 }
