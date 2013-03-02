@@ -17,7 +17,21 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void setInitialAssignment(Player p, FigureKind[] assignment) throws RemoteException {
-		game.setInitialAssignment(p, assignment);
+		//game.getOpponent(p);
+		
+		// leeres Feld in der Startaufstellung -> Exception
+		for(int i=41; i>27; i--) {
+			if(assignment[i] == null) {
+				throw new IllegalArgumentException("Illegal assignment.");
+			}
+		}
+		
+		if(assignment.length > 42) {
+			throw new IllegalArgumentException("Illegal assignment.");
+		}
+		else {
+			game.setInitialAssignment(p, assignment);
+		}
 	}
 
 	@Override
@@ -27,7 +41,19 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
-		game.move(p, from, to);
+		// Zug zu gleichem Feld soll durchgeführt werden
+		// oder: Zug führt zu negativer Position
+		// oder: keine Figur im from-Feld
+		// oder: Figur, die bewegt werden soll gehört dem Gegner
+		// oder: Figur ist nicht beweglich		
+		// oder: eigene Figur soll angegriffen werden
+		// oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
+		if(to==from || to<0 || game.getField(p)[from]== null || !game.getField(p)[from].belongsTo(p) || !game.getField(p)[from].getKind().isMovable()|| game.getField(p)[to]!= null && game.getField(p)[to].belongsTo(p) || (from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0)) {
+			throw new IllegalArgumentException("Illegal move.");
+		}
+		else {
+			game.move(p, from, to);
+		}		
 	}
 
 	@Override
@@ -42,12 +68,22 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void setInitialChoice(Player p, FigureKind kind) throws RemoteException {
-		game.setInitialChoice(p, kind);
+		if(kind.isMovable()) { 
+			game.setInitialChoice(p, kind);
+		}
+		else {
+			throw new IllegalArgumentException("Illegal choice.");
+		}
 	}
 
 	@Override
 	public void setUpdatedKindAfterDraw(Player p, FigureKind kind) throws RemoteException {
-		game.setUpdatedKindAfterDraw(p, kind);
+		if(kind.isMovable()) {
+			game.setUpdatedKindAfterDraw(p, kind);
+		}
+		else {
+			throw new IllegalArgumentException("Illegal choice.");
+		}
 	}
 
 	@Override
