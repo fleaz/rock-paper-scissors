@@ -286,8 +286,8 @@ public class GameImpl implements Game {
 		
 		// compare choices if available
 		if(this.choiceOfPlayer1 != null && this.choiceOfPlayer2 != null) {
-			int indexFrom = this.getLastMove(p).getFrom();
-			int indexTo = this.getLastMove(p).getTo();
+			int indexFrom = this.getLastMove().getFrom();
+			int indexTo = this.getLastMove().getTo();
 			
 			// get result
 			AttackResult result;
@@ -336,7 +336,7 @@ public class GameImpl implements Game {
 			}
 			
 			// update last move
-			Figure[] oldBoard = this.getLastMove(p).getOldField();
+			Figure[] oldBoard = this.getLastMove().getOldField();
 			oldBoard[indexFrom] = offenderFigure;
 			oldBoard[indexTo] = defenderFigure;
 			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
@@ -367,12 +367,12 @@ public class GameImpl implements Game {
 	 * get board
 	 */
 	@Override
-	public Figure[] getField(Player p) throws RemoteException {
+	public Figure[] getField() throws RemoteException {
 		return this.board;
 	}
 
 	@Override
-	public Move getLastMove(Player p) throws RemoteException {
+	public Move getLastMove() throws RemoteException {
 		return this.lastMove;
 	}
 

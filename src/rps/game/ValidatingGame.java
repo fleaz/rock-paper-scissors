@@ -35,8 +35,8 @@ public class ValidatingGame implements Game {
 	}
 
 	@Override
-	public Figure[] getField(Player p) throws RemoteException {
-		return game.getField(p);
+	public Figure[] getField() throws RemoteException {
+		return game.getField();
 	}
 
 	@Override
@@ -48,7 +48,13 @@ public class ValidatingGame implements Game {
 		// oder: Figur ist nicht beweglich		
 		// oder: eigene Figur soll angegriffen werden
 		// oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
-		if(to==from || to<0 || game.getField(p)[from]== null || !game.getField(p)[from].belongsTo(p) || !game.getField(p)[from].getKind().isMovable()|| game.getField(p)[to]!= null && game.getField(p)[to].belongsTo(p) || (from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0)) {
+		if(to==from 
+		|| to<0 
+		|| game.getField()[from]== null 
+		|| !game.getField()[from].belongsTo(p) 
+		|| !game.getField()[from].getKind().isMovable()
+		|| game.getField()[to]!= null && game.getField()[to].belongsTo(p) 
+		|| (from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0)) {
 			throw new IllegalArgumentException("Illegal move.");
 		}
 		else {
@@ -57,8 +63,8 @@ public class ValidatingGame implements Game {
 	}
 
 	@Override
-	public Move getLastMove(Player p) throws RemoteException {
-		return game.getLastMove(p);
+	public Move getLastMove() throws RemoteException {
+		return game.getLastMove();
 	}
 
 	@Override

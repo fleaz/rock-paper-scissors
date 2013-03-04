@@ -20,6 +20,10 @@ public class TournamentAi implements GameListener {
 		this.maxDurationForAllMovesInMilliSeconds = maxDurationForAllMovesInMilliSeconds;
 		// TODO Auto-generated constructor stub
 	}
+	
+	public Player getPlayer() {
+		return new Player("105");
+	}
 
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {

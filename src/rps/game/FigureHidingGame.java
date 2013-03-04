@@ -27,8 +27,8 @@ public class FigureHidingGame implements Game {
 	}
 
 	@Override
-	public Figure[] getField(Player p) throws RemoteException {
-		return game.getField(p);
+	public Figure[] getField() throws RemoteException {
+		return game.getField();
 	}
 
 	@Override
@@ -37,8 +37,8 @@ public class FigureHidingGame implements Game {
 	}
 
 	@Override
-	public Move getLastMove(Player p) throws RemoteException {
-		return game.getLastMove(p);
+	public Move getLastMove() throws RemoteException {
+		return game.getLastMove();
 	}
 
 	@Override
