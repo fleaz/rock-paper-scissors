@@ -42,6 +42,7 @@ public class GamePane {
 	private final JPanel boardBackground = new JPanel();
 	private final JPanel boardFigures = new JPanel();
 	private final JPanel boardArrows = new JPanel();
+	private final JPanel boardDiscovered = new JPanel();
 	private final JPanel boardButtons = new JPanel();
 	
 	private final JFrame frame = new JFrame();
@@ -53,7 +54,8 @@ public class GamePane {
 	private ImageIcon iconWhite;
 	private ImageIcon iconBlack;
 	private ImageIcon emptyIcon;
-	private ImageIcon unknown;
+	private ImageIcon discoveredIcon;
+	private ImageIcon unknownIcon;
 	private ImageIcon redTrap;
 	private ImageIcon redFlag;
 	private ImageIcon redRock;
@@ -66,16 +68,19 @@ public class GamePane {
 	private ImageIcon blueScissors;
 	
 	private Figure[] board = new Figure[42];
+	private FigureKind[] initialAssignment = new FigureKind[42];
 	
 	public String themePath = "img/default/";
 
 	private GridBagConstraints gbcBackground = new GridBagConstraints();
 	private GridBagConstraints gbcFigures = new GridBagConstraints();
 	private GridBagConstraints gbcArrows = new GridBagConstraints();
+	private GridBagConstraints gbcDiscovered = new GridBagConstraints();
 	private GridBagConstraints gbcButtons = new GridBagConstraints();
 	private JLabel[] backgroundTiles = new JLabel[42];
 	private JLabel[] arrows = new JLabel[42];
 	private JLabel[] figures = new JLabel[42];
+	private JLabel[] discovered = new JLabel[42];
 	private JButton[] fieldButtons = new JButton[42];
 
 	public GamePane(Container parent) {
@@ -83,6 +88,7 @@ public class GamePane {
 
 		boardBackground.setBounds(20, 15, 700, 600);
 		boardFigures.setBounds(20, 15, 700, 600);
+		boardDiscovered.setBounds(20, 15, 700, 600);
 		boardArrows.setBounds(20, 15, 700, 600);
 		boardButtons.setBounds(20, 15, 700, 600);
 		
@@ -92,6 +98,7 @@ public class GamePane {
 		chatInput.setBounds(20, 710, 700, 20);
 		
 		gamePane.add(boardArrows);
+		gamePane.add(boardDiscovered);
 		gamePane.add(boardFigures);
 		gamePane.add(boardBackground);
 		gamePane.add(boardButtons);
@@ -110,12 +117,33 @@ public class GamePane {
 		this.drawBackground();
 		this.drawFigures();
 		this.drawArrows();
+		this.drawDiscovered();
 		this.drawButtons();
 
 		gamePane.setVisible(false);
 
 		parent.add(gamePane);
 		bindButtons();
+	}
+
+	private void drawDiscovered() {
+		GridBagLayout gbl = new GridBagLayout();
+		this.boardDiscovered.setLayout(gbl);
+		this.boardDiscovered.setOpaque(false);
+		this.gbcDiscovered.fill = GridBagConstraints.HORIZONTAL;
+
+		for (int i = 0; i < 42; i++) {
+			this.discovered[i] = new JLabel(this.emptyIcon);
+			this.discovered[i].setOpaque(false);
+			
+			this.gbcDiscovered.gridy = Math.round(i / 7);
+			this.gbcDiscovered.gridx = i % 7;
+			this.gbcDiscovered.gridheight = 1;
+			
+			gbl.setConstraints(this.discovered[i], this.gbcDiscovered);
+			this.boardDiscovered.add(this.discovered[i]);
+		}
+		
 	}
 
 	public void askInitial() {
@@ -186,36 +214,29 @@ public class GamePane {
 				null,
 				options,
 				options[1]);
+		
 		switch(n){
 			case 0:
 				this.printLog("Manuell");
 				break;
 			case 1:
 				this.printLog("Zufaellig");
-				ArrayList<FigureKind> list = new ArrayList<FigureKind>();
-				
-				list.add(FigureKind.TRAP);
-				list.add(FigureKind.FLAG);
-				
-				for(int i =0; i<4; i++) {
-					list.add(FigureKind.PAPER);
-					list.add(FigureKind.ROCK);
-					list.add(FigureKind.SCISSORS);
-				}
-				
-				Collections.shuffle(list); // Liste mischen -> zufällige Anordnung
-				
-				FigureKind[] initialAssignment = new FigureKind[42];
-				
-				for(int i = 0; i<list.size(); i++) {
-					initialAssignment[i+28] = list.get(i);
-				}
-				try{
-					this.game.setInitialAssignment(this.player, initialAssignment);
-				}
-				catch (RemoteException e){
-					//TODO
-				}				
+				this.createRandomLineup();
+				int i=0;
+				while(i == 0){
+					Object[] options2 = {"Neu generieren",
+							"Aufstellung akzeptieren"};
+					i = JOptionPane.showOptionDialog(frame,
+							"Kampf um den Start. "
+							+ "Womit kaempfst du?",
+							"Startkampf",
+							JOptionPane.YES_NO_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							options2,
+							options2[1]);
+					this.createRandomLineup();
+				}	
 				break;
 			case 2:
 				this.printLog("Halb-Manuel");
@@ -224,16 +245,66 @@ public class GamePane {
 				this.printLog("Zufaellig");
 				break;
 		}
+		try{
+			this.game.setInitialAssignment(this.player, initialAssignment);
+		}
+		catch (RemoteException e){
+			//TODO
+		}
 		this.redraw();
 	}
 	
+	private void createRandomLineup(){
+		ArrayList<FigureKind> list = new ArrayList<FigureKind>();
+		
+		list.add(FigureKind.TRAP);
+		list.add(FigureKind.FLAG);
+		
+		for(int i =0; i<4; i++) {
+			list.add(FigureKind.PAPER);
+			list.add(FigureKind.ROCK);
+			list.add(FigureKind.SCISSORS);
+		}
+		
+		Collections.shuffle(list); // Liste mischen -> zufällige Anordnung
+				
+		for(int i = 0; i<list.size(); i++) {
+			initialAssignment[i+28] = list.get(i);
+		}
+		for(int i=28; i<42;i++){
+			switch(this.initialAssignment[i]){
+			case TRAP:
+				this.figures[i].setIcon(blueTrap);
+				break;
+			case FLAG:
+				this.figures[i].setIcon(blueFlag);
+				break;
+			case ROCK:
+				this.figures[i].setIcon(blueRock);
+				break;
+			case PAPER:
+				this.figures[i].setIcon(bluePaper);
+				break;
+			case SCISSORS:
+				this.figures[i].setIcon(blueScissors);
+				break;
+			case HIDDEN:
+				this.figures[i].setIcon(unknownIcon);
+				break;
+			default:
+				this.figures[i].setIcon(unknownIcon);
+				break;
+		}
+		}
+	}
 	private void loadPictures(){
 		try {
 			this.iconWhite = new ImageIcon(ImageIO.read(new File("img/field_white.png")));
 			this.iconBlack = new ImageIcon(ImageIO.read(new File("img/field_black.png")));
 			this.emptyIcon = new ImageIcon(ImageIO.read(new File("img/empty.png")));
+			this.discoveredIcon = new ImageIcon(ImageIO.read(new File("img/discovered.png")));
 			
-			this.unknown = new ImageIcon(ImageIO.read(new File(this.themePath + "unknown.png")));
+			this.unknownIcon = new ImageIcon(ImageIO.read(new File(this.themePath + "unknown.png")));
 			this.redTrap = new ImageIcon(ImageIO.read(new File(this.themePath + "red_trap.png")));
 			this.redFlag = new ImageIcon(ImageIO.read(new File(this.themePath + "red_flag.png")));
 			this.redRock = new ImageIcon(ImageIO.read(new File(this.themePath + "red_rock.png")));
@@ -420,6 +491,12 @@ public class GamePane {
 			//TODO
 		}
 		for (int i=0; i < 42; i++){
+			if(this.board[i] != null && this.board[i].belongsTo(this.player) && !this.board[i].isDiscovered()){
+				this.discovered[i].setIcon(discoveredIcon);
+			}
+		}
+		
+		for (int i=0; i < 42; i++){
 			if(this.board[i] != null){
 				if(this.board[i].belongsTo(this.player)){
 					switch(this.board[i].getKind()){
@@ -439,10 +516,10 @@ public class GamePane {
 							this.figures[i].setIcon(blueScissors);
 							break;
 						case HIDDEN:
-							this.figures[i].setIcon(unknown);
+							this.figures[i].setIcon(unknownIcon);
 							break;
 						default:
-							this.figures[i].setIcon(unknown);
+							this.figures[i].setIcon(unknownIcon);
 							break;
 					}
 				}
@@ -464,10 +541,10 @@ public class GamePane {
 						this.figures[i].setIcon(redScissors);
 						break;
 					case HIDDEN:
-						this.figures[i].setIcon(unknown);
+						this.figures[i].setIcon(unknownIcon);
 						break;
 					default:
-						this.figures[i].setIcon(unknown);
+						this.figures[i].setIcon(unknownIcon);
 						break;
 					}
 				}
