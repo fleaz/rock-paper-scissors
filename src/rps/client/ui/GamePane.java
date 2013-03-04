@@ -166,7 +166,6 @@ public class GamePane {
 				options[1]);
 		switch(n){
 			case 0:
-				this.printLog("Schere");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.SCISSORS);
 				}
@@ -175,7 +174,6 @@ public class GamePane {
 				}
 				break;
 			case 1:
-				this.printLog("Stein");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.ROCK);
 				}
@@ -184,7 +182,6 @@ public class GamePane {
 				}
 				break;
 			case 2:
-				this.printLog("Papier");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.PAPER);
 				}
@@ -193,7 +190,6 @@ public class GamePane {
 				}
 				break;
 			default:
-				this.printLog("Stein");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.ROCK);
 				}
@@ -202,6 +198,7 @@ public class GamePane {
 				}
 				break;
 		}
+		
 	}
 
 	public void askLineup() {
@@ -508,9 +505,7 @@ public class GamePane {
 	}
 
 	public void printLog(String message) {
-		log.append("> ");
-		log.append(message);
-		log.append("\n");
+		log.append("> " + message + "\n");
 		log.setCaretPosition(log.getDocument().getLength());
 	}
 	

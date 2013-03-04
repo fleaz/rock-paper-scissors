@@ -157,7 +157,7 @@ public class GameImpl implements Game {
 	 * set initial choice of a player
 	 */
 	@Override
-	public void setInitialChoice(Player p, FigureKind kind) throws RemoteException {
+	public void  setInitialChoice(Player p, FigureKind kind) throws RemoteException {
 		// save initial choices
 		if(p.equals(this.player1)) {
 			this.initialChoiceOfPlayer1 = kind;
