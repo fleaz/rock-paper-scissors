@@ -30,7 +30,26 @@ public class ValidatingGame implements Game {
 			throw new IllegalArgumentException("Illegal assignment.");
 		}
 		else {
-			game.setInitialAssignment(p, assignment);
+			//überprüfen, ob die Figurentypen in der richtigen Anzahl vorkommen (4x ROCK etc.)
+			int paperCounter = 0;
+			int rockCounter = 0;
+			int scissorsCounter = 0;
+			int trapCounter = 0;
+			int flagCounter = 0;
+			for(int i=0; i<assignment.length; i++) {
+				if(assignment[i] == FigureKind.PAPER) paperCounter++;
+				if(assignment[i] == FigureKind.ROCK	) rockCounter++;
+				if(assignment[i] == FigureKind.SCISSORS) scissorsCounter++;
+				if(assignment[i] == FigureKind.FLAG) flagCounter++;
+				if(assignment[i] == FigureKind.TRAP) trapCounter++;
+			}
+			if(paperCounter==4 && rockCounter ==4 && scissorsCounter==4 && flagCounter==1 && trapCounter==1) {
+				game.setInitialAssignment(p, assignment);
+			}
+			else {
+				throw new IllegalArgumentException("Illegal assignment.");
+			}
+			
 		}
 	}
 
@@ -41,6 +60,7 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
+		//mögliche ungültige Züge:
 		// Zug zu gleichem Feld soll durchgeführt werden
 		// oder: Zug führt zu negativer Position
 		// oder: keine Figur im from-Feld
