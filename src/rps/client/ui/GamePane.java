@@ -75,6 +75,7 @@ public class GamePane {
 	public String gamePhase = "initLineUpChange";
 	public boolean pick = false;
 	public int pickedPosition;
+	public boolean halbmanuell = false;
 
 	private GridBagConstraints gbcBackground = new GridBagConstraints();
 	private GridBagConstraints gbcFigures = new GridBagConstraints();
@@ -86,6 +87,7 @@ public class GamePane {
 	private JLabel[] figures = new JLabel[42];
 	private JLabel[] discovered = new JLabel[42];
 	private JButton[] fieldButtons = new JButton[42];
+	private JButton acceptLineUp = new JButton("Aufstellung akzeptieren");
 
 	public GamePane(Container parent) {
 		gamePane.setLayout(null);
@@ -101,6 +103,8 @@ public class GamePane {
 		scrollPane.setBounds(20, 630, 700, 80);
 		chatInput.setBounds(20, 710, 700, 20);
 		
+		acceptLineUp.setBounds(740, 630, 225, 100);
+		
 		gamePane.add(boardArrows);
 		gamePane.add(boardDiscovered);
 		gamePane.add(boardFigures);
@@ -110,11 +114,28 @@ public class GamePane {
 		gamePane.add(logPane);
 		gamePane.add(scrollPane);
 		gamePane.add(chatInput);
+		gamePane.add(acceptLineUp);
 
 		log.setLineWrap(true);
 		log.setEditable(false);
 		chat.setLineWrap(true);
 		chat.setEditable(false);
+		acceptLineUp.setVisible(false);
+		
+		acceptLineUp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				acceptLineUp.setVisible(false);
+				try{
+					game.setInitialAssignment(player, initialAssignment);
+				}
+				catch (RemoteException re){
+					//TODO
+				}
+				gamePhase = "gamePhase";
+				redraw();
+			}
+		});
 		
 		this.loadPictures();
 		
@@ -222,12 +243,14 @@ public class GamePane {
 		switch(n){
 			case 0:
 				this.printLog("Manuell");
+				
 				break;
 			case 1:
 				this.printLog("Zufaellig");
 				this.createRandomLineup();
 				int i=0;
 				while(i == 0){
+					this.createRandomLineup();
 					Object[] options2 = {"Neu generieren",
 							"Aufstellung akzeptieren"};
 					i = JOptionPane.showOptionDialog(frame,
@@ -239,23 +262,39 @@ public class GamePane {
 							null,
 							options2,
 							options2[1]);
-					this.createRandomLineup();
 				}	
+				try{
+					this.game.setInitialAssignment(this.player, initialAssignment);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				gamePhase = "gamePhase";
+				this.redraw();
 				break;
 			case 2:
-				this.printLog("Halb-Manuel");
+				this.printLog("Halb-Manuell");
+				this.createRandomLineup();
+				acceptLineUp.setVisible(true);
 				break;
 			default:
 				this.printLog("Zufaellig");
+				this.createRandomLineup();
+				try{
+					this.game.setInitialAssignment(this.player, initialAssignment);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				gamePhase = "gamePhase";
+				this.redraw();
 				break;
 		}
-		try{
-			this.game.setInitialAssignment(this.player, initialAssignment);
-		}
-		catch (RemoteException e){
-			//TODO
-		}
-		this.redraw();
+		
+	}
+	
+	public void switchHalbmanuell(){
+		halbmanuell = false;
 	}
 	
 	private void createRandomLineup(){
@@ -275,7 +314,12 @@ public class GamePane {
 		for(int i = 0; i<list.size(); i++) {
 			initialAssignment[i+28] = list.get(i);
 		}
+		redrawInitialAssignment();
+	}
+
+	private void redrawInitialAssignment(){
 		for(int i=28; i<42;i++){
+			if(this.initialAssignment[i] == null) continue;
 			switch(this.initialAssignment[i]){
 			case TRAP:
 				this.figures[i].setIcon(blueTrap);
@@ -298,9 +342,10 @@ public class GamePane {
 			default:
 				this.figures[i].setIcon(unknownIcon);
 				break;
-		}
+			}
 		}
 	}
+
 	private void loadPictures(){
 		try {
 			this.iconWhite = new ImageIcon(ImageIO.read(new File("img/field_white.png")));
@@ -405,7 +450,11 @@ public class GamePane {
 					case "initLineUpChange":
 						lineUpChange(position, pickedPosition);
 						break;
+					case "gamePhase":
+						
+						break;
 					default:
+						printLog("Button broken");
 						System.err.println("Button broken");
 					}
 				}
@@ -427,13 +476,8 @@ public class GamePane {
 	}
 	
 	private void lineUpChange(int pos1, int pos2){
-		try{
-			board = this.game.getField();
-		}
-		catch (RemoteException e){
-			//TODO
-		}
-		if(this.board[pos1].belongsTo(this.player)){
+
+		if((this.initialAssignment[pos1]!= null)){
 			if(pick){
 				switchField(pos1, pos2);
 				pick = false;
@@ -441,13 +485,20 @@ public class GamePane {
 			else{
 				pickedPosition = pos1;
 				pick = true;
+				printLog("Field picked");
 			}
 		}
+		else
+			printLog("Not your figure");
 		
 	}
 	
 	public void switchField(int pos1, int pos2){
-		
+		FigureKind figureBuffer = this.initialAssignment[pos1];
+		this.initialAssignment[pos1] = this.initialAssignment[pos2];
+		this.initialAssignment[pos2] = figureBuffer;
+		redrawInitialAssignment();
+		printLog("Field switched");
 	}
 	
 	private void bindButtons() {
