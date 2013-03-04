@@ -102,7 +102,8 @@ public class BasicAi implements GameListener {
 		Figure[] feld = this.game.getField();
 		int counter = 0; // Anzahl der möglichen Züge
 		
-		for(int i=0; i<possibleMoves.length; i++) {			
+		for(int i=0; i<possibleMoves.length; i++) {		
+			if(feld[i] == null) continue; 
 			if(feld[i].belongsTo(this.player)) {
 				Figure currentFigure = feld[i];
 				
