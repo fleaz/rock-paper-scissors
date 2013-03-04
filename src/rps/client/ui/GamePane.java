@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -132,7 +134,7 @@ public class GamePane {
 				options[1]);
 		switch(n){
 			case 0:
-				this.printLog("> Schere");
+				this.printLog("Schere");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.SCISSORS);
 				}
@@ -141,7 +143,7 @@ public class GamePane {
 				}
 				break;
 			case 1:
-				this.printLog("> Stein");
+				this.printLog("Stein");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.ROCK);
 				}
@@ -150,7 +152,7 @@ public class GamePane {
 				}
 				break;
 			case 2:
-				this.printLog("> Papier");
+				this.printLog("Papier");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.PAPER);
 				}
@@ -159,7 +161,7 @@ public class GamePane {
 				}
 				break;
 			default:
-				this.printLog("> Stein");
+				this.printLog("Stein");
 				try{
 					this.game.setInitialChoice(this.player, FigureKind.ROCK);
 				}
@@ -186,10 +188,10 @@ public class GamePane {
 				options[1]);
 		switch(n){
 			case 0:
-				this.printLog("> Manuell");
+				this.printLog("Manuell");
 				break;
 			case 1:
-				this.printLog("> Zufaellig");
+				this.printLog("Zufaellig");
 				ArrayList<FigureKind> list = new ArrayList<FigureKind>();
 				
 				list.add(FigureKind.TRAP);
@@ -216,10 +218,10 @@ public class GamePane {
 				}				
 				break;
 			case 2:
-				this.printLog("> Halb-Manuel");
+				this.printLog("Halb-Manuel");
 				break;
 			default:
-				this.printLog("> Zufaellig");
+				this.printLog("Zufaellig");
 				break;
 		}
 		this.redraw();
@@ -317,6 +319,14 @@ public class GamePane {
 
 		for (int i = 0; i < 42; i++) {
 			this.fieldButtons[i] = new JButton();
+			this.fieldButtons[i].setActionCommand(Integer.toString(i));
+			this.fieldButtons[i].addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					int position = Integer.parseInt(ae.getActionCommand());
+					printLog("Position: " + (position % 7) + " / " + (position / 7) + " | Array: " + position);
+				}
+			});
 			this.fieldButtons[i].setOpaque(false);
 			this.fieldButtons[i].setContentAreaFilled(false);
 			this.fieldButtons[i].setBorderPainted(false);
@@ -391,6 +401,7 @@ public class GamePane {
 	}
 
 	public void printLog(String message) {
+		log.append("> ");
 		log.append(message);
 		log.append("\n");
 		log.setCaretPosition(log.getDocument().getLength());
