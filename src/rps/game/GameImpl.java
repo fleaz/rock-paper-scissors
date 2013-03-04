@@ -85,11 +85,11 @@ public class GameImpl implements Game {
 	 */
 	private Move lastMove;
 
-	public GameImpl(Player player1, GameListener listener1, Player player2, GameListener listener2) {
+	public GameImpl(GameListener listener1, GameListener listener2) throws RemoteException {
 		this.listener1 = listener1;
 		this.listener2 = listener2;
-		this.player1 = player1;
-		this.player2 = player2;
+		this.player1 = listener1.getPlayer();
+		this.player2 = listener2.getPlayer();
 	}
 
 	@Override
