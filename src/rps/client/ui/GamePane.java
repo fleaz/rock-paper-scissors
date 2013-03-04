@@ -68,6 +68,10 @@ public class GamePane {
 	private Figure[] board = new Figure[42];
 	
 	public String themePath = "img/default/";
+	
+	public String gamePhase = "initLineUpChange";
+	public boolean pick = false;
+	public int pickedPosition;
 
 	private GridBagConstraints gbcBackground = new GridBagConstraints();
 	private GridBagConstraints gbcFigures = new GridBagConstraints();
@@ -325,6 +329,14 @@ public class GamePane {
 				public void actionPerformed(ActionEvent ae) {
 					int position = Integer.parseInt(ae.getActionCommand());
 					printLog("Position: " + (position % 7) + " / " + (position / 7) + " | Array: " + position);
+					
+					switch(gamePhase){
+					case "initLineUpChange":
+						lineUpChange(position, pickedPosition);
+						break;
+					default:
+						System.err.println("Button broken");
+					}
 				}
 			});
 			this.fieldButtons[i].setOpaque(false);
@@ -342,7 +354,31 @@ public class GamePane {
 		}
 
 	}
-
+	
+	private void lineUpChange(int pos1, int pos2){
+		try{
+			board = this.game.getField();
+		}
+		catch (RemoteException e){
+			//TODO
+		}
+		if(this.board[pos1].belongsTo(this.player)){
+			if(pick){
+				switchField(pos1, pos2);
+				pick = false;
+			}
+			else{
+				pickedPosition = pos1;
+				pick = true;
+			}
+		}
+		
+	}
+	
+	public void switchField(int pos1, int pos2){
+		
+	}
+	
 	private void bindButtons() {
 		chatInput.addKeyListener(new KeyListener() {
 			@Override
