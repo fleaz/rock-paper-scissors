@@ -79,9 +79,15 @@ public class GamePane {
 	
 	public String themePath = "img/fancy/";
 	
-	public String gamePhase = "initLineUpChange";
+	public String gamePhase = "initFlag";
 	public boolean pick = false;
 	public int pickedPosition;
+<<<<<<< HEAD
+=======
+	public boolean halbmanuell = false;
+	public int positionFlag;
+	public int positionTrap;
+>>>>>>> c8ed9099f00d9413d20b658d1032e54eef643dd8
 
 	public boolean choosen = false;
 	public int choosenPosition;
@@ -97,6 +103,7 @@ public class GamePane {
 	private JLabel[] discovered = new JLabel[42];
 	private JButton[] fieldButtons = new JButton[42];
 	private JButton acceptLineUp = new JButton("Aufstellung akzeptieren");
+	private JButton mixLineUp = new JButton("Neu mischen");
 
 	public GamePane(Container parent) {
 		gamePane.setLayout(null);
@@ -111,8 +118,9 @@ public class GamePane {
 		
 		scrollPane.setBounds(20, 630, 700, 80);
 		chatInput.setBounds(20, 710, 700, 20);
-		
-		acceptLineUp.setBounds(740, 630, 225, 100);
+
+		acceptLineUp.setBounds(740, 630, 225, 40);
+		mixLineUp.setBounds(740, 690, 225, 40);
 		
 		gamePane.add(boardArrows);
 		gamePane.add(boardDiscovered);
@@ -124,24 +132,35 @@ public class GamePane {
 		gamePane.add(scrollPane);
 		gamePane.add(chatInput);
 		gamePane.add(acceptLineUp);
+		gamePane.add(mixLineUp);
 
+		
 		log.setLineWrap(true);
 		log.setEditable(false);
 		chat.setLineWrap(true);
 		chat.setEditable(false);
 		acceptLineUp.setVisible(false);
+		mixLineUp.setVisible(false);
+		
+		mixLineUp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				halbmanuellShuffle(positionFlag, positionTrap);
+				redrawInitialAssignment();
+			}
+		});
 		
 		acceptLineUp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				acceptLineUp.setVisible(false);
+				mixLineUp.setVisible(false);
 				try{
 					game.setInitialAssignment(player, initialAssignment);
 				}
 				catch (RemoteException re){
 					//TODO
 				}
-				gamePhase = "gamePhase";
 				redraw();
 			}
 		});
@@ -254,9 +273,11 @@ public class GamePane {
 			case 1:
 				this.printLog("Zufaellig");
 				this.createRandomLineup();
+				redrawInitialAssignment();
 				int i=0;
 				while(i == 0){
 					this.createRandomLineup();
+					redrawInitialAssignment();
 					Object[] options2 = {"Neu generieren",
 							"Aufstellung akzeptieren"};
 					i = JOptionPane.showOptionDialog(frame,
@@ -280,12 +301,12 @@ public class GamePane {
 				break;
 			case 2:
 				this.printLog("Halb-Manuell");
-				this.createRandomLineup();
-				acceptLineUp.setVisible(true);
+				printLog("Setze die Flagge");
 				break;
 			default:
 				this.printLog("Zufaellig");
 				this.createRandomLineup();
+				redrawInitialAssignment();
 				try{
 					this.game.setInitialAssignment(this.player, initialAssignment);
 				}
@@ -316,7 +337,7 @@ public class GamePane {
 		for(int i = 0; i<list.size(); i++) {
 			initialAssignment[i+28] = list.get(i);
 		}
-		redrawInitialAssignment();
+		
 	}
 
 	private void redrawInitialAssignment(){
@@ -455,6 +476,33 @@ public class GamePane {
 					printLog("Position: " + (position % 7) + " / " + (position / 7) + " | Array: " + position);
 					
 					switch(gamePhase){
+					case "initFlag":
+						if(position > 27){
+							initialAssignment[position] = FigureKind.FLAG;
+							redrawInitialAssignment();
+							positionFlag = position;
+							gamePhase = "initTrap";
+							printLog("Setze die Falle");
+						}
+						else
+							printLog("Nicht im Startgebiet");
+						break;
+					case "initTrap":
+						if((position > 27) && (position != positionFlag)){
+							positionTrap = position;
+							halbmanuellShuffle(positionFlag, positionTrap);
+							redrawInitialAssignment();
+							acceptLineUp.setVisible(true);
+							mixLineUp.setVisible(true);
+							gamePhase = "initLineUpChange";
+							printLog("Passe die Startaufstellung an");
+						}
+						else
+							if(position == positionFlag)
+								printLog("Nicht auf die Flagge setzbar");
+							else
+								printLog("Nicht im Startgebiet");
+							break;						
 					case "initLineUpChange":
 						lineUpChange(position, pickedPosition);
 						break;
@@ -483,6 +531,7 @@ public class GamePane {
 
 	}
 	
+<<<<<<< HEAD
 	private void moveFigure(int pos1, int pos2){
 		try{
 			this.board = this.game.getField();
@@ -545,6 +594,20 @@ public class GamePane {
 		}
 		
 		
+=======
+	private void halbmanuellShuffle(int flag, int trap){
+		createRandomLineup();
+		int flagBuffer=0;
+		int trapBuffer=1;
+		for(int i=28; i<42;i++){
+			if(this.initialAssignment[i] == FigureKind.FLAG)
+				flagBuffer = i;
+			if(this.initialAssignment[i] == FigureKind.TRAP)
+				trapBuffer = i;
+		}
+		switchField(flag, flagBuffer);
+		if(trap != flagBuffer) switchField(trap, trapBuffer);		
+>>>>>>> c8ed9099f00d9413d20b658d1032e54eef643dd8
 	}
 	
 	private void lineUpChange(int pos1, int pos2){
