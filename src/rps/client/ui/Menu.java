@@ -21,6 +21,10 @@ public class Menu {
 	private final JMenuItem menuGameNew = new JMenuItem("New");
 	private final JMenuItem menuGameSurrender = new JMenuItem("Surrender");
 	private final JMenuItem menuGameExit = new JMenuItem("Exit");
+	
+	private final JMenu menuTheme = new JMenu("Theme");
+	private final JMenuItem themeDefault = new JMenuItem("Default");
+	private final JMenuItem themeFancy = new JMenuItem("Fancy");
 
 	public Menu(JFrame frame, UIController controller) {
 
@@ -35,6 +39,9 @@ public class Menu {
 		menuGame.setMnemonic(KeyEvent.VK_G);
 
 		menuBar.add(menuGame);
+		menuBar.add(menuTheme);
+		menuTheme.add(themeDefault);
+		menuTheme.add(themeFancy);
 		menuGame.add(menuGameNew);
 		menuGame.add(menuGameSurrender);
 		menuGame.addSeparator();
@@ -64,6 +71,20 @@ public class Menu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				controller.handleExit();
+			}
+		});
+		themeDefault.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.changeTheme("default");
+				controller.updateTheme();
+			}
+		});
+		themeFancy.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.changeTheme("fancy");
+				controller.updateTheme();
 			}
 		});
 	}

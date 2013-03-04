@@ -1,11 +1,9 @@
 package rps.client.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Container;
-import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -29,7 +27,9 @@ public class GamePane {
 	private final JPanel gamePane = new JPanel();
 	private final JTextField chatInput = new JTextField();
 	private final JTextArea chat = new JTextArea(4, 30);
+	private final JTextArea log = new JTextArea(4, 30);
 	private final JScrollPane scrollPane = new JScrollPane(chat);
+	private final JScrollPane logPane = new JScrollPane(log);
 	private final JPanel boardBackground = new JPanel();
 	private final JPanel boardFigures = new JPanel();
 	private final JPanel boardArrows = new JPanel();
@@ -38,15 +38,23 @@ public class GamePane {
 	private Game game;
 	private Player player;
 
-	private Image imageWhite;
-	private Image imageBlack;
 	private ImageIcon iconWhite;
 	private ImageIcon iconBlack;
-
-	private Image arrowUp;
-	private Image trap;
-	private ImageIcon iconUp;
-	private ImageIcon trapIcon;
+	private ImageIcon emptyIcon;
+	private ImageIcon unknown;
+	private ImageIcon redTrap;
+	private ImageIcon redFlag;
+	private ImageIcon redStone;
+	private ImageIcon redPaper;
+	private ImageIcon redScissors;
+	private ImageIcon blueTrap;
+	private ImageIcon blueFlag;
+	private ImageIcon blueStone;
+	private ImageIcon bluePaper;
+	private ImageIcon blueScissors;
+	
+	
+	public String themePath = "img/default/";
 
 	private GridBagConstraints gbcBackground = new GridBagConstraints();
 	private GridBagConstraints gbcFigures = new GridBagConstraints();
@@ -60,28 +68,35 @@ public class GamePane {
 	public GamePane(Container parent) {
 		gamePane.setLayout(null);
 
-		boardBackground.setBounds(40, 15, 700, 600);
-		boardFigures.setBounds(40, 15, 700, 600);
-		boardArrows.setBounds(40, 15, 700, 600);
-		boardButtons.setBounds(40, 15, 700, 600);
+		boardBackground.setBounds(20, 15, 700, 600);
+		boardFigures.setBounds(20, 15, 700, 600);
+		boardArrows.setBounds(20, 15, 700, 600);
+		boardButtons.setBounds(20, 15, 700, 600);
 		
-		scrollPane.setBounds(40, 630, 700, 80);
-		chatInput.setBounds(40, 710, 700, 20);
+		logPane.setBounds(740, 15, 225, 600);
 		
-		gamePane.add(boardFigures);
+		scrollPane.setBounds(20, 630, 700, 80);
+		chatInput.setBounds(20, 710, 700, 20);
+				
 		gamePane.add(boardArrows);
-		gamePane.add(boardBackground);
 		gamePane.add(boardFigures);
+		gamePane.add(boardBackground);
 		gamePane.add(boardButtons);
 
+		gamePane.add(logPane);
+		log.setLineWrap(true);
+		log.setEditable(false);
+		
 		gamePane.add(scrollPane);
 		gamePane.add(chatInput);
 
 		chat.setLineWrap(true);
 		chat.setEditable(false);
-
+		
+		this.loadPictures();
+		
 		this.drawBackground();
-		//this.drawFigures();
+		this.drawFigures();
 		this.drawArrows();
 		this.drawButtons();
 
@@ -91,25 +106,39 @@ public class GamePane {
 		bindButtons();
 	}
 
-	private void drawBackground() {
+	private void loadPictures(){
 		try {
-			this.imageWhite = ImageIO.read(new File("img/field_white.png"));
-			this.imageBlack = ImageIO.read(new File("img/field_black.png"));
-			this.iconWhite = new ImageIcon(this.imageWhite);
-			this.iconBlack = new ImageIcon(this.imageBlack);
+			this.iconWhite = new ImageIcon(ImageIO.read(new File("img/field_white.png")));
+			this.iconBlack = new ImageIcon(ImageIO.read(new File("img/field_black.png")));
+			this.emptyIcon = new ImageIcon(ImageIO.read(new File("img/empty.png")));
+			
+			this.unknown = new ImageIcon(ImageIO.read(new File(this.themePath + "unknown.png")));
+			this.redTrap = new ImageIcon(ImageIO.read(new File(this.themePath + "red_trap.png")));
+			this.redFlag = new ImageIcon(ImageIO.read(new File(this.themePath + "red_flag.png")));
+			this.redStone = new ImageIcon(ImageIO.read(new File(this.themePath + "red_rock.png")));
+			this.redPaper = new ImageIcon(ImageIO.read(new File(this.themePath + "red_paper.png")));
+			this.redScissors = new ImageIcon(ImageIO.read(new File(this.themePath + "red_scissor.png")));
+			this.blueTrap = new ImageIcon(ImageIO.read(new File(this.themePath + "blue_trap.png")));
+			this.blueFlag = new ImageIcon(ImageIO.read(new File(this.themePath + "blue_flag.png")));
+			this.blueStone = new ImageIcon(ImageIO.read(new File(this.themePath + "blue_rock.png")));
+			this.bluePaper = new ImageIcon(ImageIO.read(new File(this.themePath + "blue_paper.png")));
+			this.blueScissors = new ImageIcon(ImageIO.read(new File(this.themePath + "blue_scissor.png")));
+		
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+	}
+	private void drawBackground() {
 		GridBagLayout gbl = new GridBagLayout();
 		this.boardBackground.setLayout(gbl);
+		this.boardBackground.setOpaque(false);
 		gbcBackground.fill = GridBagConstraints.HORIZONTAL;
 
 		for (int i = 0; i < 42; i++) {
 			this.gbcBackground.gridy = Math.round(i / 7);
 			this.gbcBackground.gridx = i % 7;
 			this.gbcBackground.gridheight = 1;
-
+			
 			if (i % 2 == 0) {
 				this.backgroundTiles[i] = new JLabel(this.iconWhite);
 				gbl.setConstraints(this.backgroundTiles[i], this.gbcBackground);
@@ -124,49 +153,34 @@ public class GamePane {
 
 	
 	private void drawArrows() {
-		try {
-			this.arrowUp = ImageIO.read(new File("img/arrow_down.png"));
-			this.iconUp = new ImageIcon(this.arrowUp);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		GridBagLayout gbl = new GridBagLayout();
 		this.boardArrows.setLayout(gbl);
 		this.boardArrows.setOpaque(false);
 		this.gbcArrows.fill = GridBagConstraints.HORIZONTAL;
 
-		//Just fill with Arrows for testing
 		for (int i = 0; i < 42; i++) {
+			this.arrows[i] = new JLabel(this.emptyIcon);
+			this.arrows[i].setOpaque(false);
+			
 			this.gbcArrows.gridy = Math.round(i / 7);
 			this.gbcArrows.gridx = i % 7;
 			this.gbcArrows.gridheight = 1;
-			this.arrows[i] = new JLabel();
-			this.arrows[i].setIcon(this.iconUp);
-			this.arrows[i].setOpaque(false);
 			
 			gbl.setConstraints(this.arrows[i], this.gbcArrows);
 			this.boardArrows.add(this.arrows[i]);
-			
 		}
 	}
 	
-	private void drawFigures(){
-		try{
-			this.trap = ImageIO.read(new File("img/default/red_trap.png"));
-			this.trapIcon = new ImageIcon(this.trap);
-			
-		} catch (IOException e){
-			e.printStackTrace();
-		}
-		
+	private void drawFigures(){		
 		GridBagLayout gbl = new GridBagLayout();
 		this.boardFigures.setLayout(gbl);
+		this.boardFigures.setOpaque(false);
 		this.gbcFigures.fill = GridBagConstraints.HORIZONTAL;
 		
 		for (int i=0; i < 42; i++){
-			this.traps[i] = new JLabel(this.trapIcon);
-
+			this.traps[i] = new JLabel(this.emptyIcon);
+			this.traps[i].setOpaque(false);
+			
 			this.gbcFigures.gridy = Math.round(i / 7);
 			this.gbcFigures.gridx = i % 7;
 			this.gbcFigures.gridheight = 1;
@@ -206,6 +220,7 @@ public class GamePane {
 				boolean isEnter = e.getKeyCode() == KeyEvent.VK_ENTER;
 				if (isEnter) {
 					addToChat();
+					printLog("test");
 				}
 			}
 
@@ -254,7 +269,28 @@ public class GamePane {
 		chat.setCaretPosition(chat.getDocument().getLength());
 	}
 
+	public void printLog(String message) {
+		log.append(message);
+		log.append("\n");
+		log.setCaretPosition(log.getDocument().getLength());
+	}
+	
 	private void reset() {
 		chat.setText(null);
+	}
+
+	public void redraw() {
+		log.append("> Theme changed");
+		log.append("\n");
+//		try{
+//			
+//			
+//		} catch (IOException e){
+//			e.printStackTrace();
+//		}
+		
+		for (int i=10; i < 20; i++){
+			//this.traps[i].setIcon(this.trapIcon);
+		}
 	}
 }
