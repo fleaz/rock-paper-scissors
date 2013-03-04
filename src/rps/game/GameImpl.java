@@ -48,12 +48,12 @@ public class GameImpl implements Game {
 	/**
 	 * has player1 provided an initial assignment?
 	 */
-	private boolean initialAssignmentPrividedByPlayer1 = false;
+	private boolean initialAssignmentProvidedByPlayer1 = false;
 	
 	/**
 	 * has player2 provided an initial assignment?
 	 */
-	private boolean initialAssignmentPrividedByPlayer2 = false;
+	private boolean initialAssignmentProvidedByPlayer2 = false;
 	
 	/**
 	 * initial choice of player1
@@ -104,8 +104,8 @@ public class GameImpl implements Game {
 	 */
 	@Override
 	public void setInitialAssignment(Player p, FigureKind[] assignment) throws RemoteException {
-		if(p.equals(this.player1) && this.initialAssignmentPrividedByPlayer1
-		|| p.equals(this.player2) && this.initialAssignmentPrividedByPlayer2) {
+		if(p.equals(this.player1) && this.initialAssignmentProvidedByPlayer1
+		|| p.equals(this.player2) && this.initialAssignmentProvidedByPlayer2) {
 			throw new IllegalStateException("Initial assignment was already given!");
 		}
 		
@@ -142,12 +142,12 @@ public class GameImpl implements Game {
 		}
 		
 		if(p.equals(this.player1)) {
-			this.initialAssignmentPrividedByPlayer1 = true;
+			this.initialAssignmentProvidedByPlayer1 = true;
 		} else {
-			this.initialAssignmentPrividedByPlayer2 = true;
+			this.initialAssignmentProvidedByPlayer2 = true;
 		}
 		
-		if(this.initialAssignmentPrividedByPlayer1 && this.initialAssignmentPrividedByPlayer2) {
+		if(this.initialAssignmentProvidedByPlayer1 && this.initialAssignmentProvidedByPlayer2) {
 			this.listener1.provideInitialChoice();
 			this.listener2.provideInitialChoice();
 		}
@@ -178,7 +178,7 @@ public class GameImpl implements Game {
 				this.listener2.provideInitialChoice();
 			}
 			
-			// inform listners about the game start
+			// inform listeners about the game start
 			this.listener1.startGame();
 			this.listener2.startGame();
 		}

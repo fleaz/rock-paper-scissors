@@ -148,6 +148,7 @@ public class StartupPane {
 					showMessage(ex.getMessage());
 				} catch (Exception ex) {
 					showMessage("game could not be started");
+					ex.printStackTrace();
 					uiController.stopWaitingAndSwitchBackToStartup();
 				}
 			}

@@ -55,7 +55,7 @@ public class BasicAi implements GameListener {
 		FigureKind[] initialAssignment = new FigureKind[42];
 		
 		for(int i = 0; i<list.size(); i++) {
-			initialAssignment[i+28] = list.get(i);
+			initialAssignment[i] = list.get(i);
 		}
 		
 		game.setInitialAssignment(this.player, initialAssignment);

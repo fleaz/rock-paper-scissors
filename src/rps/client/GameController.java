@@ -114,7 +114,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void provideInitialChoice() throws RemoteException {
-		// TODO Auto-generated method stub
+		this.gamePane.askInitial();
 
 	}
 

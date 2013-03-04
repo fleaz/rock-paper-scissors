@@ -20,11 +20,12 @@ public class ValidatingGame implements Game {
 		//game.getOpponent(p);
 		
 		// leeres Feld in der Startaufstellung -> Exception
-		for(int i=41; i>27; i--) {
-			if(assignment[i] == null) {
-				throw new IllegalArgumentException("Illegal assignment.");
-			}
-		}
+		
+//		for(int i=0; i<14; i++) {
+//			if(assignment[i] == null) {
+//				throw new IllegalArgumentException("Illegal assignment.");
+//			}
+//		}
 		
 		if(assignment.length > 42) {
 			throw new IllegalArgumentException("Illegal assignment.");
