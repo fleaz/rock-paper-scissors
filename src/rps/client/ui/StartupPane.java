@@ -75,7 +75,7 @@ public class StartupPane {
 		group.add(radioAi);
 		radioHost.setSelected(true);
 		
-		connectionPane.setPreferredSize(new Dimension(780, 740));
+		connectionPane.setPreferredSize(new Dimension(980, 740));
 
 		playerLabel.setBounds(2*colWidth, rowHeight, 100, 20);
 		playerName.setBounds(2*colWidth+100, rowHeight, 150, 20);
@@ -148,6 +148,7 @@ public class StartupPane {
 					showMessage(ex.getMessage());
 				} catch (Exception ex) {
 					showMessage("game could not be started");
+					ex.printStackTrace();
 					uiController.stopWaitingAndSwitchBackToStartup();
 				}
 			}

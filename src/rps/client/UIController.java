@@ -59,4 +59,14 @@ public class UIController {
 		waitingPane.hide();
 		startupPane.show();
 	}
+
+	public void changeTheme(String theme) {
+		gamePane.themePath = "img/"+theme+"/";
+		
+	}
+
+	public void updateTheme() {
+		gamePane.redraw();
+		
+	}
 }

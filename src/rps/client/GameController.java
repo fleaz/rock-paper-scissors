@@ -21,6 +21,10 @@ public class GameController implements GameListener {
 	private GameRegistry registry;
 	private Player player;
 	private Game game;
+	
+	public Player getPlayer() {
+		return this.player;
+	}
 
 	public void setComponents(UIController uiController, GamePane gamePane) {
 		this.uiController = uiController;
@@ -49,7 +53,7 @@ public class GameController implements GameListener {
 	private void register(Player player, GameListener listener) {
 		try {
 			GameListener multiThreadedListener = decorateListener(listener);
-			registry.register(player, multiThreadedListener);
+			registry.register(multiThreadedListener);
 		} catch (RemoteException e) {
 			throw new RuntimeException(e);
 		}
@@ -110,7 +114,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void provideInitialChoice() throws RemoteException {
-		// TODO Auto-generated method stub
+		this.gamePane.askInitial();
 
 	}
 

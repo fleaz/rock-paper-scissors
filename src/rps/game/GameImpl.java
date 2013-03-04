@@ -48,12 +48,12 @@ public class GameImpl implements Game {
 	/**
 	 * has player1 provided an initial assignment?
 	 */
-	private boolean initialAssignmentPrividedByPlayer1 = false;
+	private boolean initialAssignmentProvidedByPlayer1 = false;
 	
 	/**
 	 * has player2 provided an initial assignment?
 	 */
-	private boolean initialAssignmentPrividedByPlayer2 = false;
+	private boolean initialAssignmentProvidedByPlayer2 = false;
 	
 	/**
 	 * initial choice of player1
@@ -85,11 +85,11 @@ public class GameImpl implements Game {
 	 */
 	private Move lastMove;
 
-	public GameImpl(Player player1, GameListener listener1, Player player2, GameListener listener2) {
+	public GameImpl(GameListener listener1, GameListener listener2) throws RemoteException {
 		this.listener1 = listener1;
 		this.listener2 = listener2;
-		this.player1 = player1;
-		this.player2 = player2;
+		this.player1 = listener1.getPlayer();
+		this.player2 = listener2.getPlayer();
 	}
 
 	@Override
@@ -104,8 +104,8 @@ public class GameImpl implements Game {
 	 */
 	@Override
 	public void setInitialAssignment(Player p, FigureKind[] assignment) throws RemoteException {
-		if(p.equals(this.player1) && this.initialAssignmentPrividedByPlayer1
-		|| p.equals(this.player2) && this.initialAssignmentPrividedByPlayer2) {
+		if(p.equals(this.player1) && this.initialAssignmentProvidedByPlayer1
+		|| p.equals(this.player2) && this.initialAssignmentProvidedByPlayer2) {
 			throw new IllegalStateException("Initial assignment was already given!");
 		}
 		
@@ -142,12 +142,12 @@ public class GameImpl implements Game {
 		}
 		
 		if(p.equals(this.player1)) {
-			this.initialAssignmentPrividedByPlayer1 = true;
+			this.initialAssignmentProvidedByPlayer1 = true;
 		} else {
-			this.initialAssignmentPrividedByPlayer2 = true;
+			this.initialAssignmentProvidedByPlayer2 = true;
 		}
 		
-		if(this.initialAssignmentPrividedByPlayer1 && this.initialAssignmentPrividedByPlayer2) {
+		if(this.initialAssignmentProvidedByPlayer1 && this.initialAssignmentProvidedByPlayer2) {
 			this.listener1.provideInitialChoice();
 			this.listener2.provideInitialChoice();
 		}
@@ -178,7 +178,7 @@ public class GameImpl implements Game {
 				this.listener2.provideInitialChoice();
 			}
 			
-			// inform listners about the game start
+			// inform listeners about the game start
 			this.listener1.startGame();
 			this.listener2.startGame();
 		}
@@ -286,8 +286,8 @@ public class GameImpl implements Game {
 		
 		// compare choices if available
 		if(this.choiceOfPlayer1 != null && this.choiceOfPlayer2 != null) {
-			int indexFrom = this.getLastMove(p).getFrom();
-			int indexTo = this.getLastMove(p).getTo();
+			int indexFrom = this.getLastMove().getFrom();
+			int indexTo = this.getLastMove().getTo();
 			
 			// get result
 			AttackResult result;
@@ -336,7 +336,7 @@ public class GameImpl implements Game {
 			}
 			
 			// update last move
-			Figure[] oldBoard = this.getLastMove(p).getOldField();
+			Figure[] oldBoard = this.getLastMove().getOldField();
 			oldBoard[indexFrom] = offenderFigure;
 			oldBoard[indexTo] = defenderFigure;
 			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
@@ -367,12 +367,12 @@ public class GameImpl implements Game {
 	 * get board
 	 */
 	@Override
-	public Figure[] getField(Player p) throws RemoteException {
+	public Figure[] getField() throws RemoteException {
 		return this.board;
 	}
 
 	@Override
-	public Move getLastMove(Player p) throws RemoteException {
+	public Move getLastMove() throws RemoteException {
 		return this.lastMove;
 	}
 

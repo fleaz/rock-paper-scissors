@@ -16,9 +16,11 @@ import rps.game.data.Player;
 public class FigureHidingGame implements Game {
 
 	private final Game game;
+	private final Player player;
 
-	public FigureHidingGame(Game game) throws RemoteException {
+	public FigureHidingGame(Game game, Player p) throws RemoteException {
 		this.game = game;
+		this.player = p;
 	}
 
 	@Override
@@ -27,18 +29,44 @@ public class FigureHidingGame implements Game {
 	}
 
 	@Override
-	public Figure[] getField(Player p) throws RemoteException {
-		return game.getField(p);
+	public Figure[] getField() throws RemoteException {
+		// clone board with hidden figures
+		Figure[] board = this.game.getField();
+		Figure[] newBoard = new Figure[42];
+		
+		for(int i=0; i<42; i++) {
+			// skip null fields
+			if(board[i] == null) {
+				continue;
+			}
+			
+			if(board[i].belongsTo(this.player)
+			|| board[i].isDiscovered()) {
+				newBoard[i] = board[i].clone();
+			} else {
+				newBoard[i] = board[i].cloneWithHiddenKind();
+			}
+		}
+		
+		return newBoard;
 	}
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
+		// set discovered on attack
+		Figure[] board = this.game.getField();
+		if(board[from] != null && board[to] != null) {
+			board[from].setDiscovered();
+			board[to].setDiscovered();
+		}
+		
+		// do parent action
 		game.move(p, from, to);
 	}
 
 	@Override
-	public Move getLastMove(Player p) throws RemoteException {
-		return game.getLastMove(p);
+	public Move getLastMove() throws RemoteException {
+		return game.getLastMove();
 	}
 
 	@Override
