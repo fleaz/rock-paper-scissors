@@ -56,11 +56,18 @@ public class GamePane {
 	private ImageIcon emptyIcon;
 	private ImageIcon discoveredIcon;
 	private ImageIcon unknownIcon;
+	private ImageIcon boarderIcon;
+	private ImageIcon arrowUp;
+	private ImageIcon arrowDown;
+	private ImageIcon arrowLeft;
+	private ImageIcon arrowRight;
+	
 	private ImageIcon redTrap;
 	private ImageIcon redFlag;
 	private ImageIcon redRock;
 	private ImageIcon redPaper;
 	private ImageIcon redScissors;
+	
 	private ImageIcon blueTrap;
 	private ImageIcon blueFlag;
 	private ImageIcon blueRock;
@@ -70,13 +77,15 @@ public class GamePane {
 	private Figure[] board = new Figure[42];
 	private FigureKind[] initialAssignment = new FigureKind[42];
 	
-	public String themePath = "img/default/";
+	public String themePath = "img/fancy/";
 	
 	public String gamePhase = "initLineUpChange";
 	public boolean pick = false;
 	public int pickedPosition;
-	public boolean halbmanuell = false;
 
+	public boolean choosen = false;
+	public int choosenPosition;
+	
 	private GridBagConstraints gbcBackground = new GridBagConstraints();
 	private GridBagConstraints gbcFigures = new GridBagConstraints();
 	private GridBagConstraints gbcArrows = new GridBagConstraints();
@@ -290,10 +299,6 @@ public class GamePane {
 		
 	}
 	
-	public void switchHalbmanuell(){
-		halbmanuell = false;
-	}
-	
 	private void createRandomLineup(){
 		ArrayList<FigureKind> list = new ArrayList<FigureKind>();
 		
@@ -349,6 +354,12 @@ public class GamePane {
 			this.iconBlack = new ImageIcon(ImageIO.read(new File("img/field_black.png")));
 			this.emptyIcon = new ImageIcon(ImageIO.read(new File("img/empty.png")));
 			this.discoveredIcon = new ImageIcon(ImageIO.read(new File("img/discovered.png")));
+			this.boarderIcon = new ImageIcon(ImageIO.read(new File("img/boarder.png")));
+			
+			this.arrowUp = new ImageIcon(ImageIO.read(new File("img/arrow_up.png")));
+			this.arrowDown = new ImageIcon(ImageIO.read(new File("img/arrow_down.png")));
+			this.arrowLeft = new ImageIcon(ImageIO.read(new File("img/arrow_left.png")));
+			this.arrowRight = new ImageIcon(ImageIO.read(new File("img/arrow_right.png")));
 			
 			this.unknownIcon = new ImageIcon(ImageIO.read(new File(this.themePath + "unknown.png")));
 			this.redTrap = new ImageIcon(ImageIO.read(new File(this.themePath + "red_trap.png")));
@@ -448,7 +459,7 @@ public class GamePane {
 						lineUpChange(position, pickedPosition);
 						break;
 					case "gamePhase":
-						
+						moveFigure(position,choosenPosition);
 						break;
 					default:
 						printLog("Button broken");
@@ -470,6 +481,70 @@ public class GamePane {
 
 		}
 
+	}
+	
+	private void moveFigure(int pos1, int pos2){
+		try{
+			this.board = this.game.getField();
+		}
+		catch (RemoteException re){
+			//TODO
+		}
+		
+		if(choosen){
+			printLog("From: "+pos2+" to: "+pos1);
+			try{
+				game.move(this.player, pos2, pos1);
+			}
+			catch (RemoteException re){
+				// TODO
+			}
+			finally{
+				for (int i=0; i < 42; i++){
+					this.arrows[i].setIcon(emptyIcon);
+				}
+				this.redraw();
+				printLog("Penis");
+				choosen = false;
+			}
+		}
+		else{
+			if(this.board[pos1].belongsTo(this.player)){
+				int counter=0;
+				try{
+					if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1-1) % 7 != 0)){
+						this.arrows[pos1+1].setIcon(arrowRight);
+						counter++;
+					}
+					if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
+						this.arrows[pos1-1].setIcon(arrowLeft);
+						counter++;
+					}
+					if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
+						this.arrows[pos1+7].setIcon(arrowDown);
+						counter++;
+					}
+					if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
+						this.arrows[pos1-7].setIcon(arrowUp);
+						counter++;
+					}
+				}
+				catch(IndexOutOfBoundsException ioobe){
+					//TODO
+				}
+				if(counter>0)
+					this.arrows[pos1].setIcon(boarderIcon);
+			}
+			else{
+				printLog("Nicht moeglich");
+			}
+			
+			printLog("Keine Zuege fuer dieses Feld.");
+			choosenPosition = pos1;
+			choosen = true;
+		}
+		
+		
 	}
 	
 	private void lineUpChange(int pos1, int pos2){
@@ -505,7 +580,6 @@ public class GamePane {
 				boolean isEnter = e.getKeyCode() == KeyEvent.VK_ENTER;
 				if (isEnter) {
 					addToChat();
-					printLog("test");
 				}
 			}
 
