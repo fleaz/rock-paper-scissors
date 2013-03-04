@@ -52,7 +52,7 @@ public class BasicAi implements GameListener {
 		Collections.shuffle(list); // Liste mischen -> zufällige Anordnung
 		
 		// komplettes Feld mit eigenen Figuren drauf (oben)
-		FigureKind[] initialAssignment = new FigureKind[48];
+		FigureKind[] initialAssignment = new FigureKind[42];
 		
 		for(int i = 0; i<list.size(); i++) {
 			initialAssignment[i+28] = list.get(i);
@@ -97,12 +97,12 @@ public class BasicAi implements GameListener {
 	 */
 	@Override
 	public void provideNextMove() throws RemoteException {
-		Move[] possibleMoves = new Move[48];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
+		Move[] possibleMoves = new Move[42];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
 		
 		Figure[] feld = this.game.getField();
 		int counter = 0; // Anzahl der möglichen Züge
 		
-		for(int i=0; i<42; i++) {			
+		for(int i=0; i<possibleMoves.length; i++) {			
 			if(feld[i].belongsTo(this.player)) {
 				Figure currentFigure = feld[i];
 				
