@@ -46,11 +46,6 @@ public class GameImpl implements Game {
 	private Player player2;
 	
 	/**
-	 * the info-bot
-	 */
-	private Player bot = new Player("INFO");
-	
-	/**
 	 * has player1 provided an initial assignment?
 	 */
 	private boolean initialAssignmentProvidedByPlayer1 = false;
@@ -175,16 +170,10 @@ public class GameImpl implements Game {
 			AttackResult result = this.initialChoiceOfPlayer1.attack(this.initialChoiceOfPlayer2);
 			
 			if(result == AttackResult.WIN) {
-				this.listener1.chatMessage(this.bot, "Du hast gewonnen");
-				this.listener2.chatMessage(this.bot, "Du hast verloren");
 				this.listener1.provideNextMove();
 			} else if(result == AttackResult.LOOSE) {
-				this.listener1.chatMessage(this.bot, "Du hast verloren");
-				this.listener2.chatMessage(this.bot, "Du hast gewonnen");
 				this.listener2.provideNextMove();
 			} else if(result == AttackResult.DRAW) {
-				this.listener1.chatMessage(this.bot, "Leider unentschieden. Nochmal.");
-				this.listener2.chatMessage(this.bot, "Leider unentschieden. Nochmal.");
 				this.listener1.provideInitialChoice();
 				this.listener2.provideInitialChoice();
 			}
@@ -410,12 +399,8 @@ public class GameImpl implements Game {
 	
 	private void provideNextMove(Player p) throws RemoteException {
 		if(p.equals(this.player1)) {
-			listener2.chatMessage(this.bot, "Warten auf anderen Spieler.");
-			listener1.chatMessage(this.bot, "Du bist dran.");
 			this.listener2.provideNextMove();
 		} else {
-			listener1.chatMessage(this.bot, "Warten auf anderen Spieler.");
-			listener2.chatMessage(this.bot, "Du bist dran.");
 			this.listener1.provideNextMove();
 		}
 	}

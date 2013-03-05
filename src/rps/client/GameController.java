@@ -115,7 +115,6 @@ public class GameController implements GameListener {
 	@Override
 	public void provideInitialChoice() throws RemoteException {
 		this.gamePane.askInitial();
-
 	}
 
 	@Override
