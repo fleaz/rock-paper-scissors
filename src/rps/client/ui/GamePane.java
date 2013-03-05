@@ -82,8 +82,6 @@ public class GamePane {
 	public String gamePhase = "initFlag";
 	public boolean pick = false;
 	public int pickedPosition;
-
-	public boolean halbmanuell = false;
 	public int positionFlag;
 	public int positionTrap;
 
@@ -144,7 +142,7 @@ public class GamePane {
 		mixLineUp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				halbmanuellShuffle(positionFlag, positionTrap);
+				halbmanuellShuffle();
 				redrawInitialAssignment();
 			}
 		});
@@ -160,6 +158,7 @@ public class GamePane {
 				catch (RemoteException re){
 					//TODO
 				}
+				gamePhase = "gamePhase";
 				redraw();
 			}
 		});
@@ -489,7 +488,7 @@ public class GamePane {
 					case "initTrap":
 						if((position > 27) && (position != positionFlag)){
 							positionTrap = position;
-							halbmanuellShuffle(positionFlag, positionTrap);
+							halbmanuellShuffle();
 							redrawInitialAssignment();
 							acceptLineUp.setVisible(true);
 							mixLineUp.setVisible(true);
@@ -594,7 +593,7 @@ public class GamePane {
 		
 		
 
-	private void halbmanuellShuffle(int flag, int trap){
+	private void halbmanuellShuffle(){
 		createRandomLineup();
 		int flagBuffer=0;
 		int trapBuffer=1;
@@ -604,14 +603,23 @@ public class GamePane {
 			if(this.initialAssignment[i] == FigureKind.TRAP)
 				trapBuffer = i;
 		}
-		switchField(flag, flagBuffer);
-		if(trap != flagBuffer) switchField(trap, trapBuffer);		
+		// TODO Bug: Sometimes the trap get switched
+		switchField(positionFlag, flagBuffer);
+		if(positionFlag != trapBuffer) switchField(positionTrap, trapBuffer);		
 	}
 	
 	private void lineUpChange(int pos1, int pos2){
 
 		if((this.initialAssignment[pos1]!= null)){
 			if(pick){
+				if(this.initialAssignment[pos1] == FigureKind.FLAG)
+					positionFlag = pos2;
+				if(this.initialAssignment[pos2] == FigureKind.FLAG)
+					positionFlag = pos1;
+				if(this.initialAssignment[pos1] == FigureKind.TRAP)
+					positionTrap = pos2;
+				if(this.initialAssignment[pos2] == FigureKind.TRAP)
+					positionTrap = pos1;
 				switchField(pos1, pos2);
 				pick = false;
 			}
