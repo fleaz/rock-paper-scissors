@@ -82,12 +82,11 @@ public class GamePane {
 	public String gamePhase = "initFlag";
 	public boolean pick = false;
 	public int pickedPosition;
-<<<<<<< HEAD
-=======
+
 	public boolean halbmanuell = false;
 	public int positionFlag;
 	public int positionTrap;
->>>>>>> c8ed9099f00d9413d20b658d1032e54eef643dd8
+
 
 	public boolean choosen = false;
 	public int choosenPosition;
@@ -531,7 +530,6 @@ public class GamePane {
 
 	}
 	
-<<<<<<< HEAD
 	private void moveFigure(int pos1, int pos2){
 		try{
 			this.board = this.game.getField();
@@ -592,9 +590,10 @@ public class GamePane {
 			choosenPosition = pos1;
 			choosen = true;
 		}
+	}
 		
 		
-=======
+
 	private void halbmanuellShuffle(int flag, int trap){
 		createRandomLineup();
 		int flagBuffer=0;
@@ -607,7 +606,6 @@ public class GamePane {
 		}
 		switchField(flag, flagBuffer);
 		if(trap != flagBuffer) switchField(trap, trapBuffer);		
->>>>>>> c8ed9099f00d9413d20b658d1032e54eef643dd8
 	}
 	
 	private void lineUpChange(int pos1, int pos2){
@@ -713,6 +711,9 @@ public class GamePane {
 			if(this.board[i] != null && this.board[i].belongsTo(this.player) && !this.board[i].isDiscovered()){
 				this.discovered[i].setIcon(discoveredIcon);
 			}
+			else{
+				this.discovered[i].setIcon(emptyIcon);
+			}
 		}
 		
 		for (int i=0; i < 42; i++){
@@ -767,6 +768,9 @@ public class GamePane {
 						break;
 					}
 				}
+			}
+			else{
+				this.figures[i].setIcon(emptyIcon);
 			}
 				
 		}

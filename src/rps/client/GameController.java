@@ -126,7 +126,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void provideNextMove() throws RemoteException {
-		// TODO Auto-generated method stub
+		gamePane.printLog("Du bist am Zug");
 
 	}
 
