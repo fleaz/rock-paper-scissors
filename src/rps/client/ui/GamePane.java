@@ -608,7 +608,7 @@ public class GamePane {
 			if(this.board[pos1].belongsTo(this.player)){
 				int counter=0;
 				try{
-					if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1-1) % 7 != 0)){
+					if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
 						this.arrows[pos1+1].setIcon(arrowRight);
 						counter++;
 					}
@@ -755,6 +755,13 @@ public class GamePane {
 	
 	private void reset() {
 		chat.setText(null);
+		for (int i=0; i < 42; i++){
+			this.discovered[i].setIcon(emptyIcon);
+			this.arrows[i].setIcon(emptyIcon);
+			this.figures[i].setIcon(emptyIcon);	
+			initialAssignment[i] = null;
+		}
+		this.gamePhase = "initFlag";
 	}
 
 	public void redraw() {
