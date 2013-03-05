@@ -471,11 +471,12 @@ public class GamePane {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					int position = Integer.parseInt(ae.getActionCommand());
-					printLog("Position: " + (position % 7) + " / " + (position / 7) + " | Array: " + position);
+					//printLog("Position: " + (position % 7) + " / " + (position / 7) + " | Array: " + position);
 					
 					switch(gamePhase){
 					case "initFlag":
 						if(position > 27){
+							printLog("Setze die Falle");
 							initialAssignment[position] = FigureKind.FLAG;
 							redrawInitialAssignment();
 							positionFlag = position;
@@ -550,7 +551,6 @@ public class GamePane {
 					this.arrows[i].setIcon(emptyIcon);
 				}
 				this.redraw();
-				printLog("Penis");
 				choosen = false;
 			}
 		}
@@ -578,14 +578,14 @@ public class GamePane {
 				catch(IndexOutOfBoundsException ioobe){
 					//TODO
 				}
-				if(counter>0)
-					this.arrows[pos1].setIcon(boarderIcon);
+				if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
+				else printLog("Keine Zuege fuer dieses Feld.");
+				
 			}
 			else{
 				printLog("Nicht moeglich");
 			}
 			
-			printLog("Keine Zuege fuer dieses Feld.");
 			choosenPosition = pos1;
 			choosen = true;
 		}
