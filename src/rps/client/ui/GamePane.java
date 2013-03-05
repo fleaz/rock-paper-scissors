@@ -247,7 +247,57 @@ public class GamePane {
 		}
 		
 	}
-
+	
+	public void askAfterDraw() {
+		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Object[] options = {"Schere",
+                			"Stein",
+							"Papier"};
+		int n = JOptionPane.showOptionDialog(frame,
+				"Unentschieden!"
+				+ "Womit kaempfst du?",
+				"Unentschieden",
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				options[1]);
+		switch(n){
+			case 0:
+				try{
+					this.game.setUpdatedKindAfterDraw(this.player, FigureKind.SCISSORS);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				break;
+			case 1:
+				try{
+					this.game.setUpdatedKindAfterDraw(this.player, FigureKind.ROCK);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				break;
+			case 2:
+				try{
+					this.game.setUpdatedKindAfterDraw(this.player, FigureKind.PAPER);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				break;
+			default:
+				try{
+					this.game.setUpdatedKindAfterDraw(this.player, FigureKind.ROCK);
+				}
+				catch (RemoteException e){
+					//TODO
+				}
+				break;
+		}
+		
+	}
 	public void askLineup() {
 		this.frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Object[] options = {"Manuell",
@@ -539,7 +589,7 @@ public class GamePane {
 		}
 		
 		if(choosen){
-			printLog("From: "+pos2+" to: "+pos1);
+			//printLog("From: "+pos2+" to: "+pos1);
 			try{
 				game.move(this.player, pos2, pos1);
 			}
