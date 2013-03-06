@@ -1,10 +1,18 @@
 package rps.game;
 
+import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.hamcrest.core.IsInstanceOf;
 
 import rps.client.GameListener;
+import rps.client.ui.AePlayWave;
 import rps.game.data.AttackResult;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
@@ -84,12 +92,26 @@ public class GameImpl implements Game {
 	 * the last move
 	 */
 	private Move lastMove;
+	
+	private JPanel memePane = new JPanel();
+	private JLabel picture;
+	private AePlayWave sndTrap;
 
 	public GameImpl(GameListener listener1, GameListener listener2) throws RemoteException {
 		this.listener1 = listener1;
 		this.listener2 = listener2;
 		this.player1 = listener1.getPlayer();
 		this.player2 = listener2.getPlayer();
+		
+		sndTrap = new AePlayWave("snd/aTrap.wav");
+		try{
+			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
+		}
+		catch(IOException e){
+			//TODO
+		}
+		memePane.add(picture);
+		memePane.setVisible(false);
 	}
 
 	@Override
@@ -233,8 +255,8 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 			} else {
-				offender = this.listener1;
-				defender = this.listener2;
+				offender = this.listener2;
+				defender = this.listener1;
 			}
 						
 			// evaluate result
@@ -263,6 +285,8 @@ public class GameImpl implements Game {
 					this.informAboutGameDrawn();
 				}
 			} else if(result == AttackResult.LOOSE_AGAINST_TRAP) { // kill source and target
+				memePane.setVisible(true);
+				sndTrap.start();
 				this.board[fromIndex] = null;
 				this.board[toIndex] = null;
 				
@@ -300,7 +324,9 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
+				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
+				defenderFigure.setDiscovered();
 				offenderPlayer = this.player1;
 				defenderPlayer = this.player2;
 			} else {
@@ -308,7 +334,9 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
+				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
+				defenderFigure.setDiscovered();
 				offenderPlayer = this.player2;
 				defenderPlayer = this.player1;
 			}
@@ -340,6 +368,9 @@ public class GameImpl implements Game {
 			oldBoard[indexFrom] = offenderFigure;
 			oldBoard[indexTo] = defenderFigure;
 			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
+			
+			this.choiceOfPlayer1 = null;
+			this.choiceOfPlayer2 = null;
 		}
 	}
 
