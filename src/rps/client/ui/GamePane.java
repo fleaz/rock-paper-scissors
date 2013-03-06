@@ -30,7 +30,6 @@ import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Move;
 import rps.game.data.Player;
-import rps.game.data.Move;
 
 public class GamePane {
 
@@ -106,6 +105,8 @@ public class GamePane {
 	private JButton acceptLineUp = new JButton("Aufstellung akzeptieren");
 	private JButton mixLineUp = new JButton("Neu mischen");
 	
+	private JLabel turnInfo= new JLabel("");
+	
 	private JFrame memePane = new JFrame();
 	private JLabel picture;
 	private AePlayWave sndTrap;
@@ -119,7 +120,10 @@ public class GamePane {
 		boardArrows.setBounds(20, 15, 700, 600);
 		boardButtons.setBounds(20, 15, 700, 600);
 		
-		logPane.setBounds(740, 15, 225, 600);
+		turnInfo.setBounds(740, 5, 225, 40);
+		turnInfo.setVisible(true);
+		
+		logPane.setBounds(740, 35, 225, 580);
 		
 		scrollPane.setBounds(20, 630, 700, 80);
 		chatInput.setBounds(20, 710, 700, 20);
@@ -138,6 +142,7 @@ public class GamePane {
 		gamePane.add(chatInput);
 		gamePane.add(acceptLineUp);
 		gamePane.add(mixLineUp);
+		gamePane.add(turnInfo);
 		
 		sndTrap = new AePlayWave("snd/trap.wav");
 		try{
@@ -338,11 +343,11 @@ public class GamePane {
 		
 		switch(n){
 			case 0:
-				this.printLog("Manuell");
+				this.printLog("Manuelle Aufstellung");
 				printLog("Setze die Flagge");				
 				break;
 			case 1:
-				this.printLog("Zufaellig");
+				this.printLog("Zufaellige Aufstellung");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				int i=0;
@@ -371,7 +376,7 @@ public class GamePane {
 				this.redraw();
 				break;
 			default:
-				this.printLog("Zufaellig");
+				this.printLog("Zufaellige Aufstellung");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				try{
@@ -419,10 +424,16 @@ public class GamePane {
 			FigureKind to = this.oldBoard[game.getLastMove().getTo()].getKind();
 			
 			if(myTurn){
-				printLog(this.player.getNick() + " hat mit " + from+ " gegen " + to + "gekaempft");
+				printLog("---");
+				printLog(this.player.getNick() + " greift an");
+				printLog(from+ " gegen " + to);
+				printLog("---");
 			}
 			else{
-				printLog(game.getOpponent(this.player).getNick() + " hat mit " + from+ " gegen " + to + "gekaempft");
+				printLog("---");
+				printLog(game.getOpponent(this.player).getNick() + " greift an");
+				printLog(from+ " gegen " + to);
+				printLog("---");
 			}
 		}
 		catch(RemoteException re){
@@ -431,6 +442,9 @@ public class GamePane {
 		
 	}
 	
+	public void printTurnInfo(String text){
+		this.turnInfo.setText(text);
+	}
 	private void redrawInitialAssignment(){
 		for(int i=28; i<42;i++){
 			if(this.initialAssignment[i] == null) continue;
@@ -634,48 +648,54 @@ public class GamePane {
 		catch (RemoteException re){
 			//RemoteException
 		}
-		
 		if(choosen){
-			//printLog("From: "+pos2+" to: "+pos1);
-			try{
-				game.move(this.player, pos2, pos1);
+			
+			if (pos1 != pos2){
+				try{
+					game.move(this.player, pos2, pos1);
+				}
+				catch (RemoteException re){
+					//RemoteException
+				}
+				finally{
+					this.cleanArrows();
+					this.redraw();
+					choosen = false;
+					this.myTurn = false;
+				}	
 			}
-			catch (RemoteException re){
-				//RemoteException
-			}
-			finally{
-				this.cleanArrows();
-				this.redraw();
-				choosen = false;
-			}
+			this.cleanArrows();
+			this.redraw();
+			choosen = false;
 		}
 		else{
-			if(this.board[pos1].belongsTo(this.player)){
-				int counter=0;
-				try{
-					if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
-						this.arrows[pos1+1].setIcon(arrowRight);
-						counter++;
+			if(this.board[pos1] != null){
+				if(this.board[pos1].belongsTo(this.player)){
+					int counter=0;
+					try{
+						if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
+							this.arrows[pos1+1].setIcon(arrowRight);
+							counter++;
+						}
+						if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
+							this.arrows[pos1-1].setIcon(arrowLeft);
+							counter++;
+						}
+						if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
+							this.arrows[pos1+7].setIcon(arrowDown);
+							counter++;
+						}
+						if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
+							this.arrows[pos1-7].setIcon(arrowUp);
+							counter++;
+						}
 					}
-					if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
-						this.arrows[pos1-1].setIcon(arrowLeft);
-						counter++;
+					catch(IndexOutOfBoundsException ioobe){
+						//TODO IndexOutOfBoundsException
 					}
-					if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
-						this.arrows[pos1+7].setIcon(arrowDown);
-						counter++;
+					if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
+					else printLog("Keine Zuege fuer dieses Feld.");
 					}
-					if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
-						this.arrows[pos1-7].setIcon(arrowUp);
-						counter++;
-					}
-				}
-				catch(IndexOutOfBoundsException ioobe){
-					//TODO IndexOutOfBoundsException
-				}
-				if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
-				else printLog("Keine Zuege fuer dieses Feld.");
-				
 			}
 			else{
 				printLog("Nicht moeglich");
