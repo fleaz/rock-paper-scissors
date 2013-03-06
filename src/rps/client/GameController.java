@@ -139,6 +139,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void figureAttacked() throws RemoteException {
+		gamePane.showTrap();
 		// TODO Auto-generated method stub
 
 	}
