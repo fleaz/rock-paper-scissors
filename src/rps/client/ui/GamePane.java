@@ -674,7 +674,8 @@ public class GamePane {
 		}
 	}
 		
-	public void lastMove(Move last){
+	public void lastMoveArrow(Move last){
+		this.cleanArrows();
 		if(last.getTo() == last.getFrom() + 7)
 			this.arrows[last.getFrom()].setIcon(arrowDown);
 		if(last.getTo() == last.getFrom() - 7)
@@ -683,11 +684,7 @@ public class GamePane {
 			this.arrows[last.getFrom()].setIcon(arrowRight);
 		if(last.getTo() == last.getFrom() - 1)
 			this.arrows[last.getFrom()].setIcon(arrowLeft);
-		printLog(last.toString());
 		redraw();
-		
-		
-		
 	}
 	
 
