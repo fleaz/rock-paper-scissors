@@ -11,48 +11,48 @@ import rps.game.data.Player;
 public class ValidatingGame implements Game {
 
 	private final Game game;
+	private final Player player;
 
 	public ValidatingGame(Game game, Player player) throws RemoteException {
 		this.game = game;
+		this.player = player;
 	}
 
 	@Override
 	public void setInitialAssignment(Player p, FigureKind[] assignment) throws RemoteException {
-		//game.getOpponent(p);
-		
-		// leeres Feld in der Startaufstellung -> Exception
+		if(!this.player.equals(p)) {
+			throw new IllegalArgumentException("Can't set assignment for opponent!");
+		}
 		
 		for(int i=41; i>27; i--) {
 			if(assignment[i] == null) {
-				throw new IllegalArgumentException("Illegal assignment.");
+				throw new IllegalArgumentException("Assignment is not complete!");
 			}
 		}
 		
-		if(assignment.length > 42) {
-			throw new IllegalArgumentException("Illegal assignment.");
+		if(assignment.length != 42) {
+			throw new IllegalArgumentException("Assignments lenght is wrong!");
 		}
-		else {
-			//überprüfen, ob die Figurentypen in der richtigen Anzahl vorkommen (4x ROCK etc.)
-			int paperCounter = 0;
-			int rockCounter = 0;
-			int scissorsCounter = 0;
-			int trapCounter = 0;
-			int flagCounter = 0;
-			for(int i=0; i<assignment.length; i++) {
-				if(assignment[i] == FigureKind.PAPER) paperCounter++;
-				if(assignment[i] == FigureKind.ROCK	) rockCounter++;
-				if(assignment[i] == FigureKind.SCISSORS) scissorsCounter++;
-				if(assignment[i] == FigureKind.FLAG) flagCounter++;
-				if(assignment[i] == FigureKind.TRAP) trapCounter++;
-			}
-			if(paperCounter==4 && rockCounter ==4 && scissorsCounter==4 && flagCounter==1 && trapCounter==1) {
-				game.setInitialAssignment(p, assignment);
-			}
-			else {
-				throw new IllegalArgumentException("Illegal assignment.");
-			}
-			
+		
+		//überprüfen, ob die Figurentypen in der richtigen Anzahl vorkommen (4x ROCK etc.)
+		int paperCounter = 0;
+		int rockCounter = 0;
+		int scissorsCounter = 0;
+		int trapCounter = 0;
+		int flagCounter = 0;
+		for(int i=0; i<assignment.length; i++) {
+			if(assignment[i] == FigureKind.PAPER) paperCounter++;
+			if(assignment[i] == FigureKind.ROCK	) rockCounter++;
+			if(assignment[i] == FigureKind.SCISSORS) scissorsCounter++;
+			if(assignment[i] == FigureKind.FLAG) flagCounter++;
+			if(assignment[i] == FigureKind.TRAP) trapCounter++;
 		}
+		if(paperCounter != 4 || rockCounter != 4 || scissorsCounter != 4 || flagCounter != 1 || trapCounter !=1) {
+			throw new IllegalArgumentException("Assignment composition is wrong");
+		}
+		
+		// everything is fine
+		game.setInitialAssignment(p, assignment);
 	}
 
 	@Override
