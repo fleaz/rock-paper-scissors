@@ -52,6 +52,8 @@ public class GamePane {
 	private Game game;
 	private Player player;
 
+	public boolean myTurn;
+	
 	private ImageIcon iconWhite;
 	private ImageIcon iconBlack;
 	private ImageIcon emptyIcon;
@@ -405,18 +407,28 @@ public class GamePane {
 		
 	}
 
-	public void showTrap(){
+	public void printFight(){
 		try{
 			oldBoard = game.getLastMove().getOldField();
 			
-			if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP ){
+			if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP){
 				memePane.setVisible(true);
 				sndTrap.start();
 			}
+			FigureKind from = this.oldBoard[game.getLastMove().getFrom()].getKind();
+			FigureKind to = this.oldBoard[game.getLastMove().getTo()].getKind();
+			
+			if(myTurn){
+				printLog(this.player.getNick() + " hat mit " + from+ " gegen " + to + "gekaempft");
+			}
+			else{
+				printLog(game.getOpponent(this.player).getNick() + " hat mit " + from+ " gegen " + to + "gekaempft");
+			}
 		}
 		catch(RemoteException re){
-			// TODO
+			//TODO
 		}
+		
 	}
 	
 	private void redrawInitialAssignment(){
