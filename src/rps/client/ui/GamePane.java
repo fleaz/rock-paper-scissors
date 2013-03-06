@@ -29,6 +29,7 @@ import rps.game.Game;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Player;
+import rps.game.data.Move;
 
 public class GamePane {
 
@@ -637,7 +638,22 @@ public class GamePane {
 		}
 	}
 		
+	public void lastMove(Move last){
+		if(last.getTo() == last.getFrom() + 7)
+			this.arrows[last.getFrom()].setIcon(arrowDown);
+		if(last.getTo() == last.getFrom() - 7)
+			this.arrows[last.getFrom()].setIcon(arrowUp);
+		if(last.getTo() == last.getFrom() + 1)
+			this.arrows[last.getFrom()].setIcon(arrowRight);
+		if(last.getTo() == last.getFrom() - 1)
+			this.arrows[last.getFrom()].setIcon(arrowLeft);
+		printLog(last.toString());
+		redraw();
 		
+		
+		
+	}
+	
 
 	private void manualShuffle(){
 		createRandomLineup();
@@ -649,9 +665,9 @@ public class GamePane {
 			if(this.initialAssignment[i] == FigureKind.TRAP)
 				trapBuffer = i;
 		}
-		// TODO Bug: Sometimes the trap get switched
 		switchField(positionFlag, flagBuffer);
-		if(positionFlag != trapBuffer) switchField(positionTrap, trapBuffer);		
+		if(positionFlag != trapBuffer) switchField(positionTrap, trapBuffer);
+		else switchField(positionTrap, flagBuffer);
 	}
 	
 	private void lineUpChange(int pos1){
