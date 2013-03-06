@@ -61,28 +61,20 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
-		//mögliche ungültige Züge:
-		// Zug zu gleichem Feld soll durchgeführt werden
-		// oder: Zug führt zu negativer Position
-		// oder: keine Figur im from-Feld
-		// oder: Figur, die bewegt werden soll gehört dem Gegner
-		// oder: Figur ist nicht beweglich		
-		// oder: eigene Figur soll angegriffen werden
-		// oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
 		if(to==from) {
-			throw new IllegalArgumentException("Source is destination");
+			throw new IllegalArgumentException("Source is destination"); // Zug zu gleichem Feld soll durchgeführt werden
 		} else if(to<0) {
-			throw new IllegalArgumentException("to smaler then 0");
+			throw new IllegalArgumentException("to smaler then 0"); // oder: Zug führt zu negativer Position
 		} else if(game.getField()[from]== null) {
-			throw new IllegalArgumentException("source is empty");
+			throw new IllegalArgumentException("source is empty"); // oder: keine Figur im from-Feld
 		} else if(!game.getField()[from].belongsTo(p)) {
-			throw new IllegalArgumentException("source is not own figure");
+			throw new IllegalArgumentException("source is not own figure"); // oder: Figur, die bewegt werden soll gehört dem Gegner
 		} else if(!game.getField()[from].getKind().isMovable()) {
-			throw new IllegalArgumentException("unmovable figure");
+			throw new IllegalArgumentException("unmovable figure"); // oder: Figur ist nicht beweglich	
 		} else if(game.getField()[to]!= null && game.getField()[to].belongsTo(p)) {
-			throw new IllegalArgumentException("attack own figure");
+			throw new IllegalArgumentException("attack own figure"); // oder: eigene Figur soll angegriffen werden
 		} else if(from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0) {
-			throw new IllegalArgumentException("move out of bounds");
+			throw new IllegalArgumentException("move out of bounds"); // oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
 		}
 		else {
 			game.move(p, from, to);
