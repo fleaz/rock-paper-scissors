@@ -2,7 +2,6 @@ package rps.game;
 
 import java.rmi.RemoteException;
 
-import rps.client.Application;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Move;
@@ -84,7 +83,8 @@ public class ValidatingGame implements Game {
 				game.move(p, from, to);
 			}		
 		} catch(IllegalArgumentException e) {
-			Application.showMessage(e.getMessage());
+			// TODO uncomment
+			//Application.showMessage(e.getMessage());
 			throw e;
 		}
 		

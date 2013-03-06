@@ -8,9 +8,6 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.hamcrest.core.IsInstanceOf;
 
 import rps.client.GameListener;
 import rps.client.ui.AePlayWave;
@@ -28,11 +25,6 @@ public class GameImpl implements Game {
 
 	private GameListener listener1;
 	private GameListener listener2;
-	
-	/**
-	 * not-null amount of elements in an assignment
-	 */
-	final private int ASSIGNMENT_ELEMENT_COUNT = 14;
 	
 	/**
 	 * game is surrendered?
@@ -301,30 +293,23 @@ public class GameImpl implements Game {
 			
 			// get result
 			AttackResult result;
-			GameListener offender, defender;
 			Figure offenderFigure, defenderFigure;
-			Player offenderPlayer, defenderPlayer;
+			Player offenderPlayer;
 			
 			if(this.board[indexFrom].belongsTo(this.player1)) {
 				result = this.choiceOfPlayer1.attack(this.choiceOfPlayer2);
-				offender = this.listener1;
-				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
 				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
 				defenderFigure.setDiscovered();
 				offenderPlayer = this.player1;
-				defenderPlayer = this.player2;
 			} else {
 				result = this.choiceOfPlayer2.attack(this.choiceOfPlayer1);
-				offender = this.listener1;
-				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
 				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
 				defenderFigure.setDiscovered();
 				offenderPlayer = this.player2;
-				defenderPlayer = this.player1;
 			}
 			
 			// evaluate result
