@@ -2,6 +2,7 @@ package rps.game;
 
 import java.rmi.RemoteException;
 
+import rps.client.Application;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Move;
@@ -61,26 +62,32 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
-		if(to==from) {
-			throw new IllegalArgumentException("Source is destination"); // Zug zu gleichem Feld soll durchgeführt werden
-		} else if(to<0) {
-			throw new IllegalArgumentException("to smaler then 0"); // Zug führt zu negativer Position
-		} else if(game.getField()[from]== null) {
-			throw new IllegalArgumentException("source is empty"); // keine Figur im from-Feld
-		} else if(!game.getField()[from].belongsTo(p)) {
-			throw new IllegalArgumentException("source is not own figure"); // Figur, die bewegt werden soll gehört dem Gegner
-		} else if(!game.getField()[from].getKind().isMovable()) {
-			throw new IllegalArgumentException("unmovable figure"); // Figur ist nicht beweglich	
-		} else if(game.getField()[to]!= null && game.getField()[to].belongsTo(p)) {
-			throw new IllegalArgumentException("attack own figure"); // eigene Figur soll angegriffen werden
-		} else if(from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0) {
-			throw new IllegalArgumentException("move out of bounds"); // Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
-		} else if(Math.abs(to-from) != 1 && Math.abs(to-from) != 7) {
-			throw new IllegalArgumentException("not left/right/up/down move"); // Zug nicht nach links/rechts/oben/unten
+		try {
+			if(to==from) {
+				throw new IllegalArgumentException("Source is destination!"); // Zug zu gleichem Feld soll durchgeführt werden
+			} else if(to<0) {
+				throw new IllegalArgumentException("Destination smaler then 0!"); // Zug führt zu negativer Position
+			} else if(game.getField()[from]== null) {
+				throw new IllegalArgumentException("Source is empty!"); // keine Figur im from-Feld
+			} else if(!game.getField()[from].belongsTo(p)) {
+				throw new IllegalArgumentException("Source is not an own figure!"); // Figur, die bewegt werden soll gehört dem Gegner
+			} else if(!game.getField()[from].getKind().isMovable()) {
+				throw new IllegalArgumentException("Can't move unmovable figure!"); // Figur ist nicht beweglich	
+			} else if(game.getField()[to]!= null && game.getField()[to].belongsTo(p)) {
+				throw new IllegalArgumentException("Can't attack own figure!"); // eigene Figur soll angegriffen werden
+			} else if(from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0) {
+				throw new IllegalArgumentException("Move is out of bounds!"); // Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
+			} else if(Math.abs(to-from) != 1 && Math.abs(to-from) != 7) {
+				throw new IllegalArgumentException("Can't move that far!"); // Zug nicht nach links/rechts/oben/unten
+			}
+			else {
+				game.move(p, from, to);
+			}		
+		} catch(IllegalArgumentException e) {
+			Application.showMessage(e.getMessage());
+			throw e;
 		}
-		else {
-			game.move(p, from, to);
-		}		
+		
 	}
 
 	@Override
