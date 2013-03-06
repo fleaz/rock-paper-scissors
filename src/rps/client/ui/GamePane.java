@@ -621,6 +621,12 @@ public class GamePane {
 
 	}
 	
+	public void cleanArrows(){
+		for (int i=0; i < 42; i++){
+			this.arrows[i].setIcon(emptyIcon);
+		}
+	}
+	
 	private void moveFigure(int pos1, int pos2){
 		try{
 			this.board = this.game.getField();
@@ -638,9 +644,7 @@ public class GamePane {
 				//RemoteException
 			}
 			finally{
-				for (int i=0; i < 42; i++){
-					this.arrows[i].setIcon(emptyIcon);
-				}
+				this.cleanArrows();
 				this.redraw();
 				choosen = false;
 			}
