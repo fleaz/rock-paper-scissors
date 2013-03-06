@@ -1,4 +1,4 @@
-package rps.client.ui;
+﻿package rps.client.ui;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -79,7 +79,7 @@ public class GamePane {
 	private Figure[] board = new Figure[42];
 	private FigureKind[] initialAssignment = new FigureKind[42];
 	
-	public String themePath = "img/fancy/";
+	public String themePath = "img/default/";
 	
 	public String gamePhase = "initFlag";
 	private boolean pick = false;

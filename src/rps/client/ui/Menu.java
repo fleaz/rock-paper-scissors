@@ -25,7 +25,7 @@ public class Menu {
 	
 	private final JMenu menuTheme = new JMenu("Theme");
 	private final JMenuItem themeDefault = new JMenuItem("Default");
-	private final JMenuItem themeFancy = new JMenuItem("Fancy");
+	private final JMenuItem themeFancy = new JMenuItem("Minimal");
 	
 	private final JMenu menuInfo = new JMenu("Info");
 	private final JMenuItem infoAbout = new JMenuItem("About");
@@ -92,7 +92,7 @@ public class Menu {
 		themeFancy.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				controller.changeTheme("fancy");
+				controller.changeTheme("minimal");
 				controller.updateTheme();
 			}
 		});
