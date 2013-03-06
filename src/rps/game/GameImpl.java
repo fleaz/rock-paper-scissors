@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -93,7 +94,7 @@ public class GameImpl implements Game {
 	 */
 	private Move lastMove;
 	
-	private JPanel memePane = new JPanel();
+	private JFrame memePane = new JFrame();
 	private JLabel picture;
 	private AePlayWave sndTrap;
 
@@ -103,7 +104,7 @@ public class GameImpl implements Game {
 		this.player1 = listener1.getPlayer();
 		this.player2 = listener2.getPlayer();
 		
-		sndTrap = new AePlayWave("snd/aTrap.wav");
+		sndTrap = new AePlayWave("snd/trap.wav");
 		try{
 			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
 		}
@@ -111,6 +112,8 @@ public class GameImpl implements Game {
 			//TODO
 		}
 		memePane.add(picture);
+		memePane.setLocationRelativeTo(null);
+		memePane.pack();
 		memePane.setVisible(false);
 	}
 
