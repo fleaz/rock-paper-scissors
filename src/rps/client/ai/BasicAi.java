@@ -102,7 +102,7 @@ public class BasicAi implements GameListener {
 		Figure[] feld = this.game.getField();
 		int counter = 0; // Anzahl der möglichen Züge
 		
-		for(int i=0; i<42; i++) {		
+		for(int i=0; i<feld.length; i++) {		
 			if(feld[i] != null) { 
 				if(feld[i].belongsTo(this.player)) {
 					Figure currentFigure = feld[i];
@@ -114,6 +114,9 @@ public class BasicAi implements GameListener {
 								possibleMoves[counter] = new Move(i, i-1, feld);
 								counter++;
 							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i-1, feld);
+							counter++;
 						} catch (IndexOutOfBoundsException e){}	
 						
 						try{
@@ -121,6 +124,9 @@ public class BasicAi implements GameListener {
 								possibleMoves[counter] = new Move(i, i+1, feld);
 								counter++;
 							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i+1, feld);
+							counter++;
 						} catch (IndexOutOfBoundsException e){}
 						
 						try{
@@ -128,6 +134,9 @@ public class BasicAi implements GameListener {
 								possibleMoves[counter] = new Move(i, i-7, feld);
 								counter++;
 							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i-7, feld);
+							counter++;
 						} catch (IndexOutOfBoundsException e){}
 						
 						try{
@@ -135,6 +144,9 @@ public class BasicAi implements GameListener {
 								possibleMoves[counter] = new Move(i, i+7, feld);
 								counter++;
 							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i+7, feld);
+							counter++;
 						} catch (IndexOutOfBoundsException e){}
 					}
 				}

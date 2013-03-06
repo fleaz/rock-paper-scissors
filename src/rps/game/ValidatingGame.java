@@ -69,14 +69,20 @@ public class ValidatingGame implements Game {
 		// oder: Figur ist nicht beweglich		
 		// oder: eigene Figur soll angegriffen werden
 		// oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
-		if(to==from 
-		|| to<0 
-		|| game.getField()[from]== null 
-		|| !game.getField()[from].belongsTo(p) 
-		|| !game.getField()[from].getKind().isMovable()
-		|| game.getField()[to]!= null && game.getField()[to].belongsTo(p) 
-		|| (from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0)) {
-			throw new IllegalArgumentException("Illegal move.");
+		if(to==from) {
+			throw new IllegalArgumentException("Source is destination");
+		} else if(to<0) {
+			throw new IllegalArgumentException("to smaler then 0");
+		} else if(game.getField()[from]== null) {
+			throw new IllegalArgumentException("source is empty");
+		} else if(!game.getField()[from].belongsTo(p)) {
+			throw new IllegalArgumentException("source is not own figure");
+		} else if(!game.getField()[from].getKind().isMovable()) {
+			throw new IllegalArgumentException("unmovable figure");
+		} else if(game.getField()[to]!= null && game.getField()[to].belongsTo(p)) {
+			throw new IllegalArgumentException("attack own figure");
+		} else if(from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0) {
+			throw new IllegalArgumentException("move out of bounds");
 		}
 		else {
 			game.move(p, from, to);
