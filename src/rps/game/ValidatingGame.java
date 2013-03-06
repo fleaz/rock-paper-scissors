@@ -2,7 +2,6 @@ package rps.game;
 
 import java.rmi.RemoteException;
 
-import rps.client.Application;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Move;

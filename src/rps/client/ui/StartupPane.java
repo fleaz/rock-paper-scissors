@@ -1,7 +1,5 @@
 package rps.client.ui;
 
-import static javax.swing.BoxLayout.X_AXIS;
-import static javax.swing.BoxLayout.Y_AXIS;
 import static rps.client.Application.showMessage;
 import static rps.network.NetworkUtil.getIPV4Addresses;
 
@@ -11,12 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -109,17 +105,6 @@ public class StartupPane {
 		parent.add(connectionPane);
 
 		bindActions();
-	}
-
-	private static void addEntry(JPanel container, JComponent c0, JComponent c1, JComponent c2) {
-		JPanel p = new JPanel();
-		p.setLayout(new BoxLayout(p, X_AXIS));
-		if (c0 != null) {
-			p.add(c0);
-		}
-		p.add(c1);
-		p.add(c2);
-		container.add(p);
 	}
 
 	private void bindActions() {

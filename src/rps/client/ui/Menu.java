@@ -1,7 +1,5 @@
 package rps.client.ui;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
