@@ -233,8 +233,8 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 			} else {
-				offender = this.listener1;
-				defender = this.listener2;
+				offender = this.listener2;
+				defender = this.listener1;
 			}
 						
 			// evaluate result
