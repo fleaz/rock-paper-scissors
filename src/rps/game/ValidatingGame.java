@@ -31,7 +31,26 @@ public class ValidatingGame implements Game {
 			throw new IllegalArgumentException("Illegal assignment.");
 		}
 		else {
-			game.setInitialAssignment(p, assignment);
+			//überprüfen, ob die Figurentypen in der richtigen Anzahl vorkommen (4x ROCK etc.)
+			int paperCounter = 0;
+			int rockCounter = 0;
+			int scissorsCounter = 0;
+			int trapCounter = 0;
+			int flagCounter = 0;
+			for(int i=0; i<assignment.length; i++) {
+				if(assignment[i] == FigureKind.PAPER) paperCounter++;
+				if(assignment[i] == FigureKind.ROCK	) rockCounter++;
+				if(assignment[i] == FigureKind.SCISSORS) scissorsCounter++;
+				if(assignment[i] == FigureKind.FLAG) flagCounter++;
+				if(assignment[i] == FigureKind.TRAP) trapCounter++;
+			}
+			if(paperCounter==4 && rockCounter ==4 && scissorsCounter==4 && flagCounter==1 && trapCounter==1) {
+				game.setInitialAssignment(p, assignment);
+			}
+			else {
+				throw new IllegalArgumentException("Illegal assignment.");
+			}
+			
 		}
 	}
 
@@ -42,21 +61,22 @@ public class ValidatingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
-		// Zug zu gleichem Feld soll durchgeführt werden
-		// oder: Zug führt zu negativer Position
-		// oder: keine Figur im from-Feld
-		// oder: Figur, die bewegt werden soll gehört dem Gegner
-		// oder: Figur ist nicht beweglich		
-		// oder: eigene Figur soll angegriffen werden
-		// oder: Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
-		if(to==from 
-		|| to<0 
-		|| game.getField()[from]== null 
-		|| !game.getField()[from].belongsTo(p) 
-		|| !game.getField()[from].getKind().isMovable()
-		|| game.getField()[to]!= null && game.getField()[to].belongsTo(p) 
-		|| (from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0)) {
-			throw new IllegalArgumentException("Illegal move.");
+		if(to==from) {
+			throw new IllegalArgumentException("Source is destination"); // Zug zu gleichem Feld soll durchgeführt werden
+		} else if(to<0) {
+			throw new IllegalArgumentException("to smaler then 0"); // Zug führt zu negativer Position
+		} else if(game.getField()[from]== null) {
+			throw new IllegalArgumentException("source is empty"); // keine Figur im from-Feld
+		} else if(!game.getField()[from].belongsTo(p)) {
+			throw new IllegalArgumentException("source is not own figure"); // Figur, die bewegt werden soll gehört dem Gegner
+		} else if(!game.getField()[from].getKind().isMovable()) {
+			throw new IllegalArgumentException("unmovable figure"); // Figur ist nicht beweglich	
+		} else if(game.getField()[to]!= null && game.getField()[to].belongsTo(p)) {
+			throw new IllegalArgumentException("attack own figure"); // eigene Figur soll angegriffen werden
+		} else if(from%7==0 && (to+1)%7==0 || (from+1)%7==0 && to%7==0) {
+			throw new IllegalArgumentException("move out of bounds"); // Zug über Grenzen des Spielfeldes hinaus (z.B. 6 -> 7)
+		} else if(Math.abs(to-from) != 1 && Math.abs(to-from) != 7) {
+			throw new IllegalArgumentException("not left/right/up/down move"); // Zug nicht nach links/rechts/oben/unten
 		}
 		else {
 			game.move(p, from, to);

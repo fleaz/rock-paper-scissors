@@ -53,15 +53,18 @@ public class FigureHidingGame implements Game {
 
 	@Override
 	public void move(Player p, int from, int to) throws RemoteException {
-		// set discovered on attack
 		Figure[] board = this.game.getField();
-		if(board[from] != null && board[to] != null) {
-			board[from].setDiscovered();
-			board[to].setDiscovered();
-		}
-		
+		boolean isAttack = (board[from] != null && board[to] != null);
 		// do parent action
 		game.move(p, from, to);
+		
+		// set discovered on attack
+		if(isAttack && board[from] != null) {
+			board[from].setDiscovered();
+		}
+		if(isAttack && board[to] != null) {
+			board[to].setDiscovered();
+		}
 	}
 
 	@Override

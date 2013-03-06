@@ -97,52 +97,65 @@ public class BasicAi implements GameListener {
 	 */
 	@Override
 	public void provideNextMove() throws RemoteException {
-		Move[] possibleMoves = new Move[42];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
+		Move[] possibleMoves = new Move[48];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
 		
 		Figure[] feld = this.game.getField();
 		int counter = 0; // Anzahl der möglichen Züge
 		
-		for(int i=0; i<possibleMoves.length; i++) {		
-			if(feld[i] == null) continue; 
-			if(feld[i].belongsTo(this.player)) {
-				Figure currentFigure = feld[i];
-				
-				if(currentFigure.getKind().isMovable()) { //Figur ist weder Falle, noch Flagge. (also beweglich)
-										
-					try{
-						if(this.getLeftFieldByIndex(i).belongsTo(this.player)) { //nicht in linker Spalte und Feld links daneben gehört nicht dem Spieler selbst
+		for(int i=0; i<feld.length; i++) {		
+			if(feld[i] != null) { 
+				if(feld[i].belongsTo(this.player)) {
+					Figure currentFigure = feld[i];
+					
+					if(currentFigure.getKind().isMovable()) { //Figur ist weder Falle, noch Flagge. (also beweglich)
+											
+						try{
+							if(!this.getLeftFieldByIndex(i).belongsTo(this.player)) { //nicht in linker Spalte und Feld links daneben gehört nicht dem Spieler selbst
+								possibleMoves[counter] = new Move(i, i-1, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
 							possibleMoves[counter] = new Move(i, i-1, feld);
 							counter++;
-						}
-					} catch (IndexOutOfBoundsException e){}	
-					
-					try{
-						if(this.getRightFieldByIndex(i).belongsTo(this.player)) { //nicht in rechter Spalte und Feld rechts daneben gehört nicht dem Spieler selbst
+						} catch (IndexOutOfBoundsException e){}	
+						
+						try{
+							if(!this.getRightFieldByIndex(i).belongsTo(this.player)) { //nicht in rechter Spalte und Feld rechts daneben gehört nicht dem Spieler selbst
+								possibleMoves[counter] = new Move(i, i+1, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
 							possibleMoves[counter] = new Move(i, i+1, feld);
 							counter++;
-						}
-					} catch (IndexOutOfBoundsException e){}
-					
-					try{
-						if(this.getUpFieldByIndex(i).belongsTo(this.player)) {
-							possibleMoves[counter] = new Move(i, i+7, feld);
-							counter++;
-						}
-					} catch (IndexOutOfBoundsException e){}
-					
-					try{
-						if(this.getDownFieldByIndex(i).belongsTo(this.player)) {
+						} catch (IndexOutOfBoundsException e){}
+						
+						try{
+							if(!this.getUpFieldByIndex(i).belongsTo(this.player)) {
+								possibleMoves[counter] = new Move(i, i-7, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
 							possibleMoves[counter] = new Move(i, i-7, feld);
 							counter++;
-						}
-					} catch (IndexOutOfBoundsException e){}
+						} catch (IndexOutOfBoundsException e){}
+						
+						try{
+							if(!this.getDownFieldByIndex(i).belongsTo(this.player)) {
+								possibleMoves[counter] = new Move(i, i+7, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i+7, feld);
+							counter++;
+						} catch (IndexOutOfBoundsException e){}
+					}
 				}
 			}
 		}		
 		
 		Random rand = new Random();
 		int randomNumber = rand.nextInt(counter); // Zahl zwischen 0 und (counter-1)		
-		this.game.move(player, possibleMoves[randomNumber].getFrom(), possibleMoves[randomNumber].getTo());
+		this.game.move(this.player, possibleMoves[randomNumber].getFrom(), possibleMoves[randomNumber].getTo());
 	}	
 	
 	@Override
@@ -213,10 +226,10 @@ public class BasicAi implements GameListener {
 	 * @throws RemoteException Feld außerhalb
 	 */
 	private Figure getUpFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
-		if(i>=35) {
+		if(i<7) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i+7];
+		return this.game.getField()[i-7];
 	}
 	
 	/**
@@ -227,9 +240,9 @@ public class BasicAi implements GameListener {
 	 * @throws RemoteException Feld außerhalb
 	 */
 	private Figure getDownFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
-		if(i<7) {
+		if(i>=35) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i-7];
+		return this.game.getField()[i+7];
 	}	
 }

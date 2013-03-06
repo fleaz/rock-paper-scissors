@@ -255,8 +255,8 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 			} else {
-				offender = this.listener1;
-				defender = this.listener2;
+				offender = this.listener2;
+				defender = this.listener1;
 			}
 						
 			// evaluate result
@@ -324,7 +324,9 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
+				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
+				defenderFigure.setDiscovered();
 				offenderPlayer = this.player1;
 				defenderPlayer = this.player2;
 			} else {
@@ -332,7 +334,9 @@ public class GameImpl implements Game {
 				offender = this.listener1;
 				defender = this.listener2;
 				offenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
+				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
+				defenderFigure.setDiscovered();
 				offenderPlayer = this.player2;
 				defenderPlayer = this.player1;
 			}
@@ -364,6 +368,9 @@ public class GameImpl implements Game {
 			oldBoard[indexFrom] = offenderFigure;
 			oldBoard[indexTo] = defenderFigure;
 			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
+			
+			this.choiceOfPlayer1 = null;
+			this.choiceOfPlayer2 = null;
 		}
 	}
 
