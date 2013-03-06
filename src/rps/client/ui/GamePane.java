@@ -28,6 +28,7 @@ import javax.swing.JTextField;
 import rps.game.Game;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
+import rps.game.data.Move;
 import rps.game.data.Player;
 import rps.game.data.Move;
 
@@ -84,7 +85,8 @@ public class GamePane {
 	private int pickedPosition;
 	private int positionFlag;
 	private int positionTrap;
-
+	
+	private Figure[] oldBoard;
 
 	public boolean choosen = false;
 	public int choosenPosition;
@@ -101,6 +103,10 @@ public class GamePane {
 	private JButton[] fieldButtons = new JButton[42];
 	private JButton acceptLineUp = new JButton("Aufstellung akzeptieren");
 	private JButton mixLineUp = new JButton("Neu mischen");
+	
+	private JFrame memePane = new JFrame();
+	private JLabel picture;
+	private AePlayWave sndTrap;
 
 	public GamePane(Container parent) {
 		gamePane.setLayout(null);
@@ -130,6 +136,18 @@ public class GamePane {
 		gamePane.add(chatInput);
 		gamePane.add(acceptLineUp);
 		gamePane.add(mixLineUp);
+		
+		sndTrap = new AePlayWave("snd/trap.wav");
+		try{
+			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
+		}
+		catch(IOException e){
+			//TODO
+		}
+		memePane.add(picture);
+		memePane.setLocationRelativeTo(null);
+		memePane.pack();
+		memePane.setVisible(false);
 
 		
 		log.setLineWrap(true);
@@ -387,6 +405,20 @@ public class GamePane {
 		
 	}
 
+	public void showTrap(){
+		try{
+			oldBoard = game.getLastMove().getOldField();
+			
+			if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP ){
+				memePane.setVisible(true);
+				sndTrap.start();
+			}
+		}
+		catch(RemoteException re){
+			// TODO
+		}
+	}
+	
 	private void redrawInitialAssignment(){
 		for(int i=28; i<42;i++){
 			if(this.initialAssignment[i] == null) continue;
