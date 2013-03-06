@@ -84,7 +84,8 @@ public class ValidatingGame implements Game {
 				game.move(p, from, to);
 			}		
 		} catch(IllegalArgumentException e) {
-			Application.showMessage(e.getMessage());
+			// TODO uncomment
+			//Application.showMessage(e.getMessage());
 			throw e;
 		}
 		
