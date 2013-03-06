@@ -22,7 +22,7 @@ public class TournamentAi implements GameListener {
 	}
 	
 	public Player getPlayer() {
-		return new Player("105");
+		return new Player("Gruppe (#105)");
 	}
 
 	@Override
