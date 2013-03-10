@@ -259,6 +259,12 @@ public class GameImpl implements Game {
 			if(result == AttackResult.WIN_AGAINST_FLAG) { // game is over
 				offender.gameIsWon();
 				defender.gameIsLost();
+				
+				for(int i=0; i<this.board.length; i++) {
+					if(this.board[i] != null) {
+						this.board[i].setDiscovered();
+					}
+				}
 			} else if(result == AttackResult.DRAW) { // provide choices
 				this.listener1.provideChoiceAfterFightIsDrawn();
 				this.listener2.provideChoiceAfterFightIsDrawn();
@@ -266,16 +272,20 @@ public class GameImpl implements Game {
 				this.board[toIndex] = this.board[fromIndex];
 				this.board[fromIndex] = null;
 				
-				if(this.movableFiguresLeft()) {
+				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
 					this.provideNextMove(movingPlayer);
+				} else if(movableFiguresLeft()) {
+					this.provideNextMove(this.getOpponent(movingPlayer));
 				} else {
 					this.informAboutGameDrawn();
 				}
 			} else if(result == AttackResult.LOOSE) { // kill source and keep target
 				this.board[fromIndex] = null;
 				
-				if(this.movableFiguresLeft()) {
+				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
 					this.provideNextMove(movingPlayer);
+				} else if(movableFiguresLeft()) {
+					this.provideNextMove(this.getOpponent(movingPlayer));
 				} else {
 					this.informAboutGameDrawn();
 				}
@@ -285,8 +295,10 @@ public class GameImpl implements Game {
 				this.board[fromIndex] = null;
 				this.board[toIndex] = null;
 				
-				if(this.movableFiguresLeft()) {
+				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
 					this.provideNextMove(movingPlayer);
+				} else if(movableFiguresLeft()) {
+					this.provideNextMove(this.getOpponent(movingPlayer));
 				} else {
 					this.informAboutGameDrawn();
 				}
