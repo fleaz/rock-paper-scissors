@@ -85,28 +85,12 @@ public class GameImpl implements Game {
 	 * the last move
 	 */
 	private Move lastMove;
-	
-	private JFrame memePane = new JFrame();
-	private JLabel picture;
-	private AePlayWave sndTrap;
 
 	public GameImpl(GameListener listener1, GameListener listener2) throws RemoteException {
 		this.listener1 = listener1;
 		this.listener2 = listener2;
 		this.player1 = listener1.getPlayer();
 		this.player2 = listener2.getPlayer();
-		
-		sndTrap = new AePlayWave("snd/trap.wav");
-		try{
-			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
-		}
-		catch(IOException e){
-			//TODO
-		}
-		memePane.add(picture);
-		memePane.setLocationRelativeTo(null);
-		memePane.pack();
-		memePane.setVisible(false);
 	}
 
 	@Override
@@ -290,8 +274,7 @@ public class GameImpl implements Game {
 					this.informAboutGameDrawn();
 				}
 			} else if(result == AttackResult.LOOSE_AGAINST_TRAP) { // kill source and target
-				memePane.setVisible(true);
-				sndTrap.start();
+				
 				this.board[fromIndex] = null;
 				this.board[toIndex] = null;
 				

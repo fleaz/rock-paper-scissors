@@ -1,4 +1,4 @@
-package rps.client.ui;
+﻿package rps.client.ui;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -28,6 +28,7 @@ import javax.swing.JTextField;
 import rps.game.Game;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
+import rps.game.data.Move;
 import rps.game.data.Player;
 
 public class GamePane {
@@ -50,6 +51,8 @@ public class GamePane {
 	private Game game;
 	private Player player;
 
+	public boolean myTurn;
+	
 	private ImageIcon iconWhite;
 	private ImageIcon iconBlack;
 	private ImageIcon emptyIcon;
@@ -76,14 +79,15 @@ public class GamePane {
 	private Figure[] board = new Figure[42];
 	private FigureKind[] initialAssignment = new FigureKind[42];
 	
-	public String themePath = "img/fancy/";
+	public String themePath = "img/default/";
 	
 	public String gamePhase = "initFlag";
 	private boolean pick = false;
 	private int pickedPosition;
 	private int positionFlag;
 	private int positionTrap;
-
+	
+	private Figure[] oldBoard;
 
 	public boolean choosen = false;
 	public int choosenPosition;
@@ -100,6 +104,12 @@ public class GamePane {
 	private JButton[] fieldButtons = new JButton[42];
 	private JButton acceptLineUp = new JButton("Aufstellung akzeptieren");
 	private JButton mixLineUp = new JButton("Neu mischen");
+	
+	private JLabel turnInfo= new JLabel("");
+	
+	private JFrame memePane = new JFrame();
+	private JLabel picture;
+	private AePlayWave sndTrap;
 
 	public GamePane(Container parent) {
 		gamePane.setLayout(null);
@@ -110,7 +120,10 @@ public class GamePane {
 		boardArrows.setBounds(20, 15, 700, 600);
 		boardButtons.setBounds(20, 15, 700, 600);
 		
-		logPane.setBounds(740, 15, 225, 600);
+		turnInfo.setBounds(740, 5, 225, 40);
+		turnInfo.setVisible(true);
+		
+		logPane.setBounds(740, 35, 225, 580);
 		
 		scrollPane.setBounds(20, 630, 700, 80);
 		chatInput.setBounds(20, 710, 700, 20);
@@ -129,6 +142,19 @@ public class GamePane {
 		gamePane.add(chatInput);
 		gamePane.add(acceptLineUp);
 		gamePane.add(mixLineUp);
+		gamePane.add(turnInfo);
+		
+		sndTrap = new AePlayWave("snd/trap.wav");
+		try{
+			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
+		}
+		catch(IOException e){
+			//TODO
+		}
+		memePane.add(picture);
+		memePane.setLocationRelativeTo(null);
+		memePane.pack();
+		memePane.setVisible(false);
 
 		
 		log.setLineWrap(true);
@@ -317,11 +343,11 @@ public class GamePane {
 		
 		switch(n){
 			case 0:
-				this.printLog("Manuell");
+				this.printLog("Manuelle Aufstellung");
 				printLog("Setze die Flagge");				
 				break;
 			case 1:
-				this.printLog("Zufaellig");
+				this.printLog("Zufaellige Aufstellung");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				int i=0;
@@ -350,7 +376,7 @@ public class GamePane {
 				this.redraw();
 				break;
 			default:
-				this.printLog("Zufaellig");
+				this.printLog("Zufaellige Aufstellung");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				try{
@@ -386,6 +412,39 @@ public class GamePane {
 		
 	}
 
+	public void printFight(){
+		try{
+			oldBoard = game.getLastMove().getOldField();
+			
+			if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP){
+				memePane.setVisible(true);
+				sndTrap.start();
+			}
+			FigureKind from = this.oldBoard[game.getLastMove().getFrom()].getKind();
+			FigureKind to = this.oldBoard[game.getLastMove().getTo()].getKind();
+			
+			if(myTurn){
+				printLog("---");
+				printLog(this.player.getNick() + " greift an");
+				printLog(from+ " gegen " + to);
+				printLog("---");
+			}
+			else{
+				printLog("---");
+				printLog(game.getOpponent(this.player).getNick() + " greift an");
+				printLog(from+ " gegen " + to);
+				printLog("---");
+			}
+		}
+		catch(RemoteException re){
+			//TODO
+		}
+		
+	}
+	
+	public void printTurnInfo(String text){
+		this.turnInfo.setText(text);
+	}
 	private void redrawInitialAssignment(){
 		for(int i=28; i<42;i++){
 			if(this.initialAssignment[i] == null) continue;
@@ -576,6 +635,12 @@ public class GamePane {
 
 	}
 	
+	public void cleanArrows(){
+		for (int i=0; i < 42; i++){
+			this.arrows[i].setIcon(emptyIcon);
+		}
+	}
+	
 	private void moveFigure(int pos1, int pos2){
 		try{
 			this.board = this.game.getField();
@@ -583,50 +648,54 @@ public class GamePane {
 		catch (RemoteException re){
 			//RemoteException
 		}
-		
 		if(choosen){
-			//printLog("From: "+pos2+" to: "+pos1);
-			try{
-				game.move(this.player, pos2, pos1);
-			}
-			catch (RemoteException re){
-				//RemoteException
-			}
-			finally{
-				for (int i=0; i < 42; i++){
-					this.arrows[i].setIcon(emptyIcon);
+			
+			if (pos1 != pos2){
+				try{
+					game.move(this.player, pos2, pos1);
 				}
-				this.redraw();
-				choosen = false;
+				catch (RemoteException re){
+					//RemoteException
+				}
+				finally{
+					this.cleanArrows();
+					this.redraw();
+					choosen = false;
+					this.myTurn = false;
+				}	
 			}
+			this.cleanArrows();
+			this.redraw();
+			choosen = false;
 		}
 		else{
-			if(this.board[pos1].belongsTo(this.player)){
-				int counter=0;
-				try{
-					if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
-						this.arrows[pos1+1].setIcon(arrowRight);
-						counter++;
+			if(this.board[pos1] != null){
+				if(this.board[pos1].belongsTo(this.player)){
+					int counter=0;
+					try{
+						if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
+							this.arrows[pos1+1].setIcon(arrowRight);
+							counter++;
+						}
+						if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
+							this.arrows[pos1-1].setIcon(arrowLeft);
+							counter++;
+						}
+						if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
+							this.arrows[pos1+7].setIcon(arrowDown);
+							counter++;
+						}
+						if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
+							this.arrows[pos1-7].setIcon(arrowUp);
+							counter++;
+						}
 					}
-					if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
-						this.arrows[pos1-1].setIcon(arrowLeft);
-						counter++;
+					catch(IndexOutOfBoundsException ioobe){
+						//TODO IndexOutOfBoundsException
 					}
-					if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
-						this.arrows[pos1+7].setIcon(arrowDown);
-						counter++;
+					if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
+					else printLog("Keine Zuege fuer dieses Feld.");
 					}
-					if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
-						this.arrows[pos1-7].setIcon(arrowUp);
-						counter++;
-					}
-				}
-				catch(IndexOutOfBoundsException ioobe){
-					//TODO IndexOutOfBoundsException
-				}
-				if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
-				else printLog("Keine Zuege fuer dieses Feld.");
-				
 			}
 			else{
 				printLog("Nicht moeglich");
@@ -637,7 +706,19 @@ public class GamePane {
 		}
 	}
 		
-		
+	public void lastMoveArrow(Move last){
+		this.cleanArrows();
+		if(last.getTo() == last.getFrom() + 7)
+			this.arrows[last.getFrom()].setIcon(arrowDown);
+		if(last.getTo() == last.getFrom() - 7)
+			this.arrows[last.getFrom()].setIcon(arrowUp);
+		if(last.getTo() == last.getFrom() + 1)
+			this.arrows[last.getFrom()].setIcon(arrowRight);
+		if(last.getTo() == last.getFrom() - 1)
+			this.arrows[last.getFrom()].setIcon(arrowLeft);
+		redraw();
+	}
+	
 
 	private void manualShuffle(){
 		createRandomLineup();
@@ -649,9 +730,9 @@ public class GamePane {
 			if(this.initialAssignment[i] == FigureKind.TRAP)
 				trapBuffer = i;
 		}
-		// TODO Bug: Sometimes the trap get switched
 		switchField(positionFlag, flagBuffer);
-		if(positionFlag != trapBuffer) switchField(positionTrap, trapBuffer);		
+		if(positionFlag != trapBuffer) switchField(positionTrap, trapBuffer);
+		else switchField(positionTrap, flagBuffer);
 	}
 	
 	private void lineUpChange(int pos1){

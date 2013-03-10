@@ -126,19 +126,20 @@ public class GameController implements GameListener {
 	@Override
 	public void provideNextMove() throws RemoteException {
 		gamePane.redraw();
-		gamePane.printLog("Du bist am Zug");
-
+		gamePane.printTurnInfo("Du bist am Zug");
+		gamePane.myTurn = true;
 	}
 
 	@Override
 	public void figureMoved() throws RemoteException {
-		gamePane.printLog("Warten auf anderen Spieler");
+		gamePane.printTurnInfo("Warten auf anderen Spieler");
+		gamePane.lastMoveArrow(game.getLastMove());
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void figureAttacked() throws RemoteException {
+		gamePane.printFight();
 		// TODO Auto-generated method stub
 
 	}
