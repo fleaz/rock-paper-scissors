@@ -476,8 +476,9 @@ public class GamePane {
 
 	private void loadPictures(){
 		try {
-			this.iconWhite = new ImageIcon(ImageIO.read(new File("img/field_white.png")));
-			this.iconBlack = new ImageIcon(ImageIO.read(new File("img/field_black.png")));
+			this.iconWhite = new ImageIcon(ImageIO.read(new File(this.themePath + "field_white.png")));
+			this.iconBlack = new ImageIcon(ImageIO.read(new File(this.themePath + "field_black.png")));
+			
 			this.emptyIcon = new ImageIcon(ImageIO.read(new File("img/empty.png")));
 			this.discoveredIcon = new ImageIcon(ImageIO.read(new File("img/discovered.png")));
 			this.boarderIcon = new ImageIcon(ImageIO.read(new File("img/boarder.png")));
@@ -849,6 +850,7 @@ public class GamePane {
 		catch (RemoteException e){
 			//RemoteException
 		}
+		
 		for (int i=0; i < 42; i++){
 			if(this.board[i] != null && this.board[i].belongsTo(this.player) && !this.board[i].isDiscovered()){
 				this.discovered[i].setIcon(discoveredIcon);
@@ -856,9 +858,15 @@ public class GamePane {
 			else{
 				this.discovered[i].setIcon(emptyIcon);
 			}
+			if (i % 2 == 0) {
+				this.backgroundTiles[i].setIcon(this.iconWhite);
+			} else {
+				this.backgroundTiles[i].setIcon(this.iconBlack);
+			}
 		}
 		
 		for (int i=0; i < 42; i++){
+			
 			if(this.board[i] != null){
 				if(this.board[i].belongsTo(this.player)){
 					switch(this.board[i].getKind()){
