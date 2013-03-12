@@ -415,15 +415,20 @@ public class GamePane {
 	}
 
 	public void printFight(){
+		FigureKind to;
 		try{
 			oldBoard = game.getLastMove().getOldField();
 			
 			if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP){
 				memePane.setVisible(true);
 				sndTrap.start();
+				to = FigureKind.TRAP;
 			}
+			else{
+				to = this.oldBoard[game.getLastMove().getTo()].getKind();
+			}
+			
 			FigureKind from = this.oldBoard[game.getLastMove().getFrom()].getKind();
-			FigureKind to = this.oldBoard[game.getLastMove().getTo()].getKind();
 			
 			if(this.oldBoard[game.getLastMove().getFrom()].belongsTo(this.player)){
 				printLog(this.player.getNick() + " greift an");
