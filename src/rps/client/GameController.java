@@ -169,6 +169,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void gameIsLost() throws RemoteException {
+		gamePane.redraw();
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
 			    "Sie haben leider verloren."+
@@ -181,6 +182,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void gameIsWon() throws RemoteException {
+		gamePane.redraw();
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
 			    "Herzlichen Glueckwunsch. Sie haben gewonnen."+
@@ -192,6 +194,7 @@ public class GameController implements GameListener {
 
 	@Override
 	public void gameIsDrawn() throws RemoteException {
+		gamePane.redraw();
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
 			    "Das Spiel ist unentschieden."+

@@ -88,6 +88,11 @@ public class GameImpl implements Game {
 	@Override
 	public void sendMessage(Player p, String message) throws RemoteException {
 		if (message.equals("iwanttowinthisgamenow")){  //Added a little cheatcode
+			for(int i=0; i<this.board.length; i++) {
+				if(this.board[i] != null) {
+					this.board[i].setDiscovered();
+				}
+			}
 			if(p == this.player1){
 				listener1.gameIsWon();
 				listener2.gameIsLost();
