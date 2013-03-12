@@ -20,6 +20,8 @@ public class BasicAi implements GameListener {
 
 	private Player player = new Player("Basic AI");
 	private Game game;
+	
+	static int counter = 0;
 
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
@@ -37,7 +39,12 @@ public class BasicAi implements GameListener {
 	 */
 	@Override
 	public void provideInitialAssignment(Game game) throws RemoteException {
-		//Liste mit allen eigenen Figuren erstellen
+		game.setInitialAssignment(this.player, createRandomInitialAssignment());
+		this.game = game;
+	}
+
+	public static FigureKind[] createRandomInitialAssignment() {
+		// Liste mit allen eigenen Figuren erstellen
 		ArrayList<FigureKind> list = new ArrayList<FigureKind>();
 		
 		list.add(FigureKind.TRAP);
@@ -51,35 +58,13 @@ public class BasicAi implements GameListener {
 		
 		Collections.shuffle(list); // Liste mischen -> zufällige Anordnung
 		
-		// komplettes Feld mit eigenen Figuren drauf (oben)
+		// komplettes Feld
 		FigureKind[] initialAssignment = new FigureKind[42];
 		
 		for(int i = 0; i<list.size(); i++) {
-			initialAssignment[i+28] = list.get(i);
+			initialAssignment[i+28] = list.get(i); // 28 offset for top assignment
 		}
-		
-		game.setInitialAssignment(this.player, initialAssignment);
-		this.game = game;
-	}
-	
-	// gibt zufällig Schere,Stein oder Papier zurück
-	private FigureKind randomChoice() {
-		Random rand = new Random();
-		int randomNumber = rand.nextInt(3) + 1;
-		
-		FigureKind choice = null;
-		switch(randomNumber) {
-			case 1:
-				choice = FigureKind.SCISSORS; //Schere auswählen
-				break;
-			case 2:
-				choice = FigureKind.ROCK;// Stein
-				break;
-			case 3:
-				choice = FigureKind.PAPER; // Papier
-				break;
-		}
-		return choice;
+		return initialAssignment;
 	}
 
 	// Startentscheidung: Wählt zufällig Schere/Stein/Papier aus
@@ -97,64 +82,10 @@ public class BasicAi implements GameListener {
 	 */
 	@Override
 	public void provideNextMove() throws RemoteException {
-		Move[] possibleMoves = new Move[48];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
-		
-		Figure[] feld = this.game.getField();
-		int counter = 0; // Anzahl der möglichen Züge
-		
-		for(int i=0; i<feld.length; i++) {		
-			if(feld[i] != null) { 
-				if(feld[i].belongsTo(this.player)) {
-					Figure currentFigure = feld[i];
-					
-					if(currentFigure.getKind().isMovable()) { //Figur ist weder Falle, noch Flagge. (also beweglich)
-											
-						try{
-							if(!this.getLeftFieldByIndex(i).belongsTo(this.player)) { //nicht in linker Spalte und Feld links daneben gehört nicht dem Spieler selbst
-								possibleMoves[counter] = new Move(i, i-1, feld);
-								counter++;
-							}
-						} catch(NullPointerException e) {
-							possibleMoves[counter] = new Move(i, i-1, feld);
-							counter++;
-						} catch (IndexOutOfBoundsException e){}	
-						
-						try{
-							if(!this.getRightFieldByIndex(i).belongsTo(this.player)) { //nicht in rechter Spalte und Feld rechts daneben gehört nicht dem Spieler selbst
-								possibleMoves[counter] = new Move(i, i+1, feld);
-								counter++;
-							}
-						} catch(NullPointerException e) {
-							possibleMoves[counter] = new Move(i, i+1, feld);
-							counter++;
-						} catch (IndexOutOfBoundsException e){}
-						
-						try{
-							if(!this.getUpFieldByIndex(i).belongsTo(this.player)) {
-								possibleMoves[counter] = new Move(i, i-7, feld);
-								counter++;
-							}
-						} catch(NullPointerException e) {
-							possibleMoves[counter] = new Move(i, i-7, feld);
-							counter++;
-						} catch (IndexOutOfBoundsException e){}
-						
-						try{
-							if(!this.getDownFieldByIndex(i).belongsTo(this.player)) {
-								possibleMoves[counter] = new Move(i, i+7, feld);
-								counter++;
-							}
-						} catch(NullPointerException e) {
-							possibleMoves[counter] = new Move(i, i+7, feld);
-							counter++;
-						} catch (IndexOutOfBoundsException e){}
-					}
-				}
-			}
-		}		
+		Move[] possibleMoves = BasicAi.getPossibleMoves(this.game.getField(), player);
 		
 		Random rand = new Random();
-		int randomNumber = rand.nextInt(counter); // Zahl zwischen 0 und (counter-1)		
+		int randomNumber = rand.nextInt(BasicAi.counter); // Zahl zwischen 0 und (counter-1)		
 		this.game.move(this.player, possibleMoves[randomNumber].getFrom(), possibleMoves[randomNumber].getTo());
 	}	
 	
@@ -197,11 +128,11 @@ public class BasicAi implements GameListener {
 	 * @throws IndexOutOfBoundsException
 	 * @throws RemoteException Feld außerhalb
 	 */
-	private Figure getLeftFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
+	private static Figure getLeftFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
 		if(i%7==0) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i-1];
+		return board[i-1];
 	}
 	
 	/**
@@ -211,11 +142,11 @@ public class BasicAi implements GameListener {
 	 * @throws IndexOutOfBoundsException
 	 * @throws RemoteException Feld außerhalb
 	 */
-	private Figure getRightFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
+	private static Figure getRightFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
 		if((i+1)%7==0) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i+1];
+		return board[i+1];
 	}
 	
 	/**
@@ -225,11 +156,11 @@ public class BasicAi implements GameListener {
 	 * @throws IndexOutOfBoundsException
 	 * @throws RemoteException Feld außerhalb
 	 */
-	private Figure getUpFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
+	private static Figure getUpFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
 		if(i<7) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i-7];
+		return board[i-7];
 	}
 	
 	/**
@@ -239,10 +170,91 @@ public class BasicAi implements GameListener {
 	 * @throws IndexOutOfBoundsException
 	 * @throws RemoteException Feld außerhalb
 	 */
-	private Figure getDownFieldByIndex(int i) throws IndexOutOfBoundsException, RemoteException{
+	private static Figure getDownFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
 		if(i>=35) {
 			throw new IndexOutOfBoundsException();
 		}
-		return this.game.getField()[i+7];
+		return board[i+7];
 	}	
+	
+	// gibt zufällig Schere,Stein oder Papier zurück
+	public static FigureKind randomChoice() {
+		Random rand = new Random();
+		int randomNumber = rand.nextInt(3) + 1;
+		
+		FigureKind choice = null;
+		switch(randomNumber) {
+			case 1:
+				choice = FigureKind.SCISSORS; //Schere auswählen
+				break;
+			case 2:
+				choice = FigureKind.ROCK;// Stein
+				break;
+			case 3:
+				choice = FigureKind.PAPER; // Papier
+				break;
+		}
+		return choice;
+	}
+	
+	public static Move[] getPossibleMoves(Figure[] feld, Player player) throws RemoteException {
+		Move[] possibleMoves = new Move[48];  // maximal 48 Züge möglich: 12 Figuren mit je 4 Möglichkeiten
+		int counter = 0; // Anzahl der möglichen Züge
+		//System.out.println("get possible moves for " + player);
+		
+		for(int i=0; i<feld.length; i++) {		
+			//System.out.println(feld[i]);
+			if(feld[i] != null) { 
+				if(feld[i].belongsTo(player)) {
+					Figure currentFigure = feld[i];
+					
+					if(currentFigure.getKind().isMovable()) { //Figur ist weder Falle, noch Flagge. (also beweglich)
+											
+						try{
+							if(!BasicAi.getLeftFieldByIndex(feld, i).belongsTo(player)) { //nicht in linker Spalte und Feld links daneben gehört nicht dem Spieler selbst
+								possibleMoves[counter] = new Move(i, i-1, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i-1, feld);
+							counter++;
+						} catch (IndexOutOfBoundsException e){}	
+						
+						try{
+							if(!BasicAi.getRightFieldByIndex(feld, i).belongsTo(player)) { //nicht in rechter Spalte und Feld rechts daneben gehört nicht dem Spieler selbst
+								possibleMoves[counter] = new Move(i, i+1, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i+1, feld);
+							counter++;
+						} catch (IndexOutOfBoundsException e){}
+						
+						try{
+							if(!BasicAi.getUpFieldByIndex(feld, i).belongsTo(player)) {
+								possibleMoves[counter] = new Move(i, i-7, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i-7, feld);
+							counter++;
+						} catch (IndexOutOfBoundsException e){}
+						
+						try{
+							if(!BasicAi.getDownFieldByIndex(feld, i).belongsTo(player)) {
+								possibleMoves[counter] = new Move(i, i+7, feld);
+								counter++;
+							}
+						} catch(NullPointerException e) {
+							possibleMoves[counter] = new Move(i, i+7, feld);
+							counter++;
+						} catch (IndexOutOfBoundsException e){}
+					}
+				}
+			}
+		}
+		
+		BasicAi.counter = counter;
+		return possibleMoves;
+	}
 }
