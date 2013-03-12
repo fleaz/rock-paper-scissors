@@ -607,12 +607,13 @@ public class GamePane {
 							printLog("Passe die Startaufstellung an");
 							printLog("---");
 						}
-						else
+						else{
 							if(position == positionFlag)
 								printLog("Nicht auf die Flagge setzbar");
 							else
 								printLog("Nicht im Startgebiet");
 							printLog("---");
+						}
 							break;						
 					case "initLineUpChange":
 						lineUpChange(position);
@@ -677,7 +678,7 @@ public class GamePane {
 		}
 		else{
 			if(this.board[pos1] != null){
-				if(this.board[pos1].belongsTo(this.player)){
+				if((this.board[pos1].belongsTo(this.player)) && (this.board[pos1].getKind() != FigureKind.FLAG) && (this.board[pos1].getKind() != FigureKind.TRAP)){
 					int counter=0;
 					try{
 						if (((pos1+1) % 7 != 0) && ((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player))){
@@ -700,17 +701,27 @@ public class GamePane {
 					catch(IndexOutOfBoundsException ioobe){
 						//TODO IndexOutOfBoundsException
 					}
-					if(counter>0) this.arrows[pos1].setIcon(boarderIcon);
-					else printLog("Keine Zuege fuer dieses Feld.");
+					if(counter>0){
+						choosenPosition = pos1;
+						choosen = true;
+						this.arrows[pos1].setIcon(boarderIcon);
 					}
+					else{
+							printLog("Keine Zuege fuer dieses Feld.");
+							printLog("---");
+						}
+					}
+				else{
+					printLog("Keine Zuege fuer die " + this.board[pos1].getKind() );
+					printLog("---");
+				}
 			}
 			else{
 				printLog("Nicht moeglich");
 				printLog("---");
 			}
 			
-			choosenPosition = pos1;
-			choosen = true;
+
 		}
 	}
 		
