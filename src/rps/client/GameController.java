@@ -1,8 +1,12 @@
 package rps.client;
 
+import static javax.swing.JOptionPane.showMessageDialog;
 import static rps.network.NetworkUtil.hostNetworkGame;
 
 import java.rmi.RemoteException;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import rps.client.ui.GamePane;
 import rps.game.Game;
@@ -21,6 +25,9 @@ public class GameController implements GameListener {
 	private GameRegistry registry;
 	private Player player;
 	private Game game;
+	
+	private JFrame finalScreen = new JFrame();
+	
 	
 	public Player getPlayer() {
 		return this.player;
@@ -100,6 +107,15 @@ public class GameController implements GameListener {
 		}
 	}
 
+	private void playAgain(int n){
+		if(n == 0){
+			this.uiController.switchBackToStartup();
+		}
+		else{
+			this.uiController.handleExit();
+		}
+	}
+	
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
 		gamePane.receivedMessage(sender, message);
@@ -153,19 +169,35 @@ public class GameController implements GameListener {
 
 	@Override
 	public void gameIsLost() throws RemoteException {
-		// TODO Auto-generated method stub
+		int n = JOptionPane.showConfirmDialog(
+			    this.finalScreen,
+			    "Sie haben leider verloren."+
+			    "Moechten sie ein neues Spiel starten?",
+			    "Game over",
+			    JOptionPane.YES_NO_OPTION);
+		this.playAgain(n);
 
 	}
 
 	@Override
 	public void gameIsWon() throws RemoteException {
-		// TODO Auto-generated method stub
-
+		int n = JOptionPane.showConfirmDialog(
+			    this.finalScreen,
+			    "Herzlichen Glueckwunsch. Sie haben gewonnen."+
+				"Moechten sie ein neues Spiel starten?",
+			    "Game over",
+			    JOptionPane.YES_NO_OPTION);
+		this.playAgain(n);
 	}
 
 	@Override
 	public void gameIsDrawn() throws RemoteException {
-		// TODO Auto-generated method stub
-
+		int n = JOptionPane.showConfirmDialog(
+			    this.finalScreen,
+			    "Das Spiel ist unentschieden."+
+			    "Moechten sie ein neues Spiel starten?",
+			    "Game over",
+			    JOptionPane.YES_NO_OPTION);
+		this.playAgain(n);
 	}
 }
