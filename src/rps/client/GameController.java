@@ -127,13 +127,11 @@ public class GameController implements GameListener {
 	public void provideNextMove() throws RemoteException {
 		gamePane.redraw();
 		gamePane.printTurnInfo("Du bist am Zug");
-		gamePane.myTurn = true;
 	}
 
 	@Override
 	public void figureMoved() throws RemoteException {
 		gamePane.printTurnInfo("Warten auf anderen Spieler");
-		gamePane.myTurn = false;
 		gamePane.lastMoveArrow();
 		// TODO Auto-generated method stub
 	}
