@@ -87,9 +87,20 @@ public class GameImpl implements Game {
 
 	@Override
 	public void sendMessage(Player p, String message) throws RemoteException {
+		if (message.equals("iwanttowinthisgamenow")){  //Added a little cheatcode
+			if(p == this.player1){
+				listener1.gameIsWon();
+				listener2.gameIsLost();
+			}
+			else{
+				listener2.gameIsWon();
+				listener1.gameIsLost();
+			}
+		}
+		else{
 		listener1.chatMessage(p, message);
 		listener2.chatMessage(p, message);
-		// TODO Auto-generated method stub
+		}
 	}
 
 	/**
