@@ -1,16 +1,8 @@
 package rps.game;
 
-import java.io.File;
-import java.io.IOException;
 import java.rmi.RemoteException;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
 import rps.client.GameListener;
-import rps.client.ui.AePlayWave;
 import rps.game.data.AttackResult;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
