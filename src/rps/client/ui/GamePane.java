@@ -707,16 +707,22 @@ public class GamePane {
 		}
 	}
 		
-	public void lastMoveArrow(Move last){
+	public void lastMoveArrow(){
 		this.cleanArrows();
-		if(last.getTo() == last.getFrom() + 7)
-			this.arrows[last.getFrom()].setIcon(arrowDown);
-		if(last.getTo() == last.getFrom() - 7)
-			this.arrows[last.getFrom()].setIcon(arrowUp);
-		if(last.getTo() == last.getFrom() + 1)
-			this.arrows[last.getFrom()].setIcon(arrowRight);
-		if(last.getTo() == last.getFrom() - 1)
-			this.arrows[last.getFrom()].setIcon(arrowLeft);
+		try{
+			Move last = this.game.getLastMove();
+			if(last.getTo() == last.getFrom() + 7)
+				this.arrows[last.getFrom()].setIcon(arrowDown);
+			if(last.getTo() == last.getFrom() - 7)
+				this.arrows[last.getFrom()].setIcon(arrowUp);
+			if(last.getTo() == last.getFrom() + 1)
+				this.arrows[last.getFrom()].setIcon(arrowRight);
+			if(last.getTo() == last.getFrom() - 1)
+				this.arrows[last.getFrom()].setIcon(arrowLeft);
+		}
+		catch(RemoteException re){
+			//TODO
+		}
 		redraw();
 	}
 	
