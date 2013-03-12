@@ -233,7 +233,7 @@ public class GamePane {
 							"Papier"};
 		int n = JOptionPane.showOptionDialog(frame,
 				"Kampf um den Start. "
-				+ "Womit kaempfst du?",
+				+ "Womit kämpfst du?",
 				"Startkampf",
 				JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE,
@@ -284,7 +284,7 @@ public class GamePane {
 							"Papier"};
 		int n = JOptionPane.showOptionDialog(frame,
 				"Unentschieden!"
-				+ "Womit kaempfst du?",
+				+ "Womit kämpfst du?",
 				"Unentschieden",
 				JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE,
@@ -330,10 +330,10 @@ public class GamePane {
 	public void askLineup() {
 		this.frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Object[] options = {"Manuell",
-							"Zufaellig"};
+							"Zufällig"};
 		int n = JOptionPane.showOptionDialog(frame,
 				"Kampf um den Start. "
-				+ "Womit kaempfst du?",
+				+ "Womit kämpfst du?",
 				"Startkampf",
 				JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE,
@@ -348,7 +348,7 @@ public class GamePane {
 				printLog("---");
 				break;
 			case 1:
-				this.printLog("Zufaellige Aufstellung");
+				this.printLog("Zufällige Aufstellung");
 				printLog("---");
 				this.createRandomLineup();
 				redrawInitialAssignment();
@@ -360,7 +360,7 @@ public class GamePane {
 							"Aufstellung akzeptieren"};
 					i = JOptionPane.showOptionDialog(frame,
 							"Kampf um den Start. "
-							+ "Womit kaempfst du?",
+							+ "Womit kämpfst du?",
 							"Startkampf",
 							JOptionPane.YES_NO_OPTION,
 							JOptionPane.QUESTION_MESSAGE,
@@ -378,7 +378,7 @@ public class GamePane {
 				this.redraw();
 				break;
 			default:
-				this.printLog("Zufaellige Aufstellung");
+				this.printLog("Zufällige Aufstellung");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				try{
@@ -712,17 +712,17 @@ public class GamePane {
 						this.arrows[pos1].setIcon(boarderIcon);
 					}
 					else{
-							printLog("Keine Zuege fuer dieses Feld.");
+							printLog("Keine Züge für dieses Feld.");
 							printLog("---");
 						}
 					}
 				else{
-					printLog("Keine Zuege fuer die " + this.board[pos1].getKind() );
+					printLog("Keine Züge für die " + this.board[pos1].getKind() );
 					printLog("---");
 				}
 			}
 			else{
-				printLog("Nicht moeglich");
+				printLog("Nicht möglich");
 				printLog("---");
 			}
 			

@@ -203,7 +203,7 @@ public class GameImpl implements Game {
 	public void move(Player movingPlayer, int fromIndex, int toIndex) throws RemoteException {
 		if(movingPlayer.equals(this.lastMovedPlayer) 
 		&& this.movableFiguresLeftByPlayer(this.getOpponent(movingPlayer))) {
-			throw new IllegalStateException("Can't move two times");
+			throw new IllegalStateException("Can't move two times"); // TODO Why is this exception thrown in the beginning sometimes?
 		}
 		
 		// save this move as last move
@@ -366,8 +366,8 @@ public class GameImpl implements Game {
 			throw new IllegalStateException("Both players can't surrender!");
 		}
 		
-		listener1.chatMessage(p, "I surrender");
-		listener2.chatMessage(p, "I surrender");
+		listener1.chatMessage(p, "Ich gebe auf");
+		listener2.chatMessage(p, "Ich gebe auf");
 		
 		if(p.equals(this.player1)) {
 			this.listener1.gameIsLost();
