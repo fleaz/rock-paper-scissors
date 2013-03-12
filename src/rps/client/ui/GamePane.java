@@ -437,7 +437,7 @@ public class GamePane {
 			}
 		}
 		catch(RemoteException re){
-			//TODO
+			//RemoteException
 		}
 		
 	}
@@ -667,14 +667,12 @@ public class GamePane {
 					//2movesException
 				}
 				finally{
-					this.cleanArrows();
-					this.redraw();
+					this.lastMoveArrow();
 					choosen = false;
 					this.myTurn = false;
 				}	
 			}
-			this.cleanArrows();
-			this.redraw();
+			this.lastMoveArrow();
 			choosen = false;
 		}
 		else{
@@ -682,19 +680,19 @@ public class GamePane {
 				if(this.board[pos1].belongsTo(this.player)){
 					int counter=0;
 					try{
-						if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
+						if (((pos1+1) % 7 != 0) && ((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player))){
 							this.arrows[pos1+1].setIcon(arrowRight);
 							counter++;
 						}
-						if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
+						if ((pos1 % 7 != 0) && ((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player))){
 							this.arrows[pos1-1].setIcon(arrowLeft);
 							counter++;
 						}
-						if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
+						if ((pos1 <= 34) && ((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player))){
 							this.arrows[pos1+7].setIcon(arrowDown);
 							counter++;
 						}
-						if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
+						if ((pos1 >= 7) && ((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player))){
 							this.arrows[pos1-7].setIcon(arrowUp);
 							counter++;
 						}
@@ -730,9 +728,9 @@ public class GamePane {
 				this.arrows[last.getFrom()].setIcon(arrowLeft);
 		}
 		catch(RemoteException re){
-			//TODO
+			//RemoteException
 		}
-		redraw();
+		this.redraw();
 	}
 	
 
@@ -779,7 +777,7 @@ public class GamePane {
 		}
 	}
 	
-	public void switchField(int pos1, int pos2){
+	private void switchField(int pos1, int pos2){
 		FigureKind figureBuffer = this.initialAssignment[pos1];
 		this.initialAssignment[pos1] = this.initialAssignment[pos2];
 		this.initialAssignment[pos2] = figureBuffer;
