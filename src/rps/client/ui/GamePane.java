@@ -672,19 +672,19 @@ public class GamePane {
 				if(this.board[pos1].belongsTo(this.player)){
 					int counter=0;
 					try{
-						if (((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player)) && ((pos1+1) % 7 != 0)){
+						if (((pos1+1) % 7 != 0) && ((this.board[pos1+1] == null) || !this.board[pos1+1].belongsTo(this.player))){
 							this.arrows[pos1+1].setIcon(arrowRight);
 							counter++;
 						}
-						if (((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player)) && (pos1 % 7 != 0)){
+						if ((pos1 % 7 != 0) && ((this.board[pos1-1] == null) || !this.board[pos1-1].belongsTo(this.player))){
 							this.arrows[pos1-1].setIcon(arrowLeft);
 							counter++;
 						}
-						if (((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player)) && (pos1 <= 34)){
+						if ((pos1 <= 34) && ((this.board[pos1+7] == null) || !this.board[pos1+7].belongsTo(this.player))){
 							this.arrows[pos1+7].setIcon(arrowDown);
 							counter++;
 						}
-						if (((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player)) && (pos1 >= 7)){
+						if ((pos1 >= 7) && ((this.board[pos1-7] == null) || !this.board[pos1-7].belongsTo(this.player))){
 							this.arrows[pos1-7].setIcon(arrowUp);
 							counter++;
 						}
