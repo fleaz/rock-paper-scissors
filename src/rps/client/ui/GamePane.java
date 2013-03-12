@@ -437,7 +437,7 @@ public class GamePane {
 			}
 		}
 		catch(RemoteException re){
-			//TODO
+			//RemoteException
 		}
 		
 	}
@@ -666,6 +666,7 @@ public class GamePane {
 				}	
 			}
 			this.cleanArrows();
+			this.lastMoveArrow();
 			this.redraw();
 			choosen = false;
 		}
@@ -721,7 +722,7 @@ public class GamePane {
 				this.arrows[last.getFrom()].setIcon(arrowLeft);
 		}
 		catch(RemoteException re){
-			//TODO
+			//RemoteException
 		}
 		redraw();
 	}
@@ -769,7 +770,7 @@ public class GamePane {
 		
 	}
 	
-	public void switchField(int pos1, int pos2){
+	private void switchField(int pos1, int pos2){
 		FigureKind figureBuffer = this.initialAssignment[pos1];
 		this.initialAssignment[pos1] = this.initialAssignment[pos2];
 		this.initialAssignment[pos2] = figureBuffer;
