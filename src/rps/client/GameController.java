@@ -133,13 +133,14 @@ public class GameController implements GameListener {
 	@Override
 	public void figureMoved() throws RemoteException {
 		gamePane.printTurnInfo("Warten auf anderen Spieler");
-		gamePane.lastMoveArrow(game.getLastMove());
+		gamePane.lastMoveArrow();
 		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void figureAttacked() throws RemoteException {
 		gamePane.printFight();
+		gamePane.lastMoveArrow();
 		// TODO Auto-generated method stub
 
 	}
