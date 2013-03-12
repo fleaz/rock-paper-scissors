@@ -182,6 +182,9 @@ public class GameImpl implements Game {
 				this.listener2.provideInitialChoice();
 			}
 			
+			this.initialChoiceOfPlayer1 = null;
+			this.initialChoiceOfPlayer2 = null;
+			
 			// inform listeners about the game start
 			this.listener1.startGame();
 			this.listener2.startGame();
@@ -214,10 +217,10 @@ public class GameImpl implements Game {
 			this.board[fromIndex] = null;
 			
 			// provide next move
-			if(movingPlayer.equals(this.player1)) {
-				this.listener2.provideNextMove();
+			if(movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+				provideNextMove(getOpponent(movingPlayer));
 			} else {
-				this.listener1.provideNextMove();
+				provideNextMove(movingPlayer);
 			}
 		} else { // attack
 			// inform listeners
@@ -259,32 +262,24 @@ public class GameImpl implements Game {
 				this.board[toIndex] = this.board[fromIndex];
 				this.board[fromIndex] = null;
 				
-				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
-					this.provideNextMove(movingPlayer);
-				} else if(movableFiguresLeft()) {
-					this.provideNextMove(this.getOpponent(movingPlayer));
+				if(this.movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+					this.provideNextMove(getOpponent(movingPlayer));
 				} else {
-					this.informAboutGameDrawn();
+					this.provideNextMove(movingPlayer);
 				}
 			} else if(result == AttackResult.LOOSE) { // kill source and keep target
 				this.board[fromIndex] = null;
 				
-				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
-					this.provideNextMove(movingPlayer);
-				} else if(movableFiguresLeft()) {
-					this.provideNextMove(this.getOpponent(movingPlayer));
-				} else {
-					this.informAboutGameDrawn();
-				}
+				this.provideNextMove(getOpponent(movingPlayer));
 			} else if(result == AttackResult.LOOSE_AGAINST_TRAP) { // kill source and target
 				
 				this.board[fromIndex] = null;
 				this.board[toIndex] = null;
 				
-				if(this.movableFiguresLeftByPlayer(movingPlayer)) {
-					this.provideNextMove(movingPlayer);
+				if(this.movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+					this.provideNextMove(getOpponent(movingPlayer));
 				} else if(movableFiguresLeft()) {
-					this.provideNextMove(this.getOpponent(movingPlayer));
+					this.provideNextMove(movingPlayer);
 				} else {
 					this.informAboutGameDrawn();
 				}
@@ -309,7 +304,7 @@ public class GameImpl implements Game {
 			// get result
 			AttackResult result;
 			Figure offenderFigure, defenderFigure;
-			Player offenderPlayer;
+			Player defenderPlayer;
 			
 			if(this.board[indexFrom].belongsTo(this.player1)) {
 				result = this.choiceOfPlayer1.attack(this.choiceOfPlayer2);
@@ -317,14 +312,14 @@ public class GameImpl implements Game {
 				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
 				defenderFigure.setDiscovered();
-				offenderPlayer = this.player1;
+				defenderPlayer = this.player2;
 			} else {
 				result = this.choiceOfPlayer2.attack(this.choiceOfPlayer1);
 				offenderFigure = new Figure(this.choiceOfPlayer2, this.player2);
 				offenderFigure.setDiscovered();
 				defenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
 				defenderFigure.setDiscovered();
-				offenderPlayer = this.player2;
+				defenderPlayer = this.player1;
 			}
 			
 			// evaluate result
@@ -332,12 +327,12 @@ public class GameImpl implements Game {
 				this.board[indexTo] = offenderFigure;
 				this.board[indexFrom] = null;
 				
-				this.provideNextMove(offenderPlayer);
+				this.provideNextMove(defenderPlayer);
 			} else if(result == AttackResult.LOOSE) { // kill source
 				this.board[indexTo] = defenderFigure;
 				this.board[indexFrom] = null;
 				
-				this.provideNextMove(offenderPlayer);
+				this.provideNextMove(defenderPlayer);
 			} else if(result == AttackResult.DRAW) {
 				this.listener1.provideChoiceAfterFightIsDrawn();
 				this.listener2.provideChoiceAfterFightIsDrawn();
@@ -416,9 +411,9 @@ public class GameImpl implements Game {
 	
 	private void provideNextMove(Player p) throws RemoteException {
 		if(p.equals(this.player1)) {
-			this.listener2.provideNextMove();
-		} else {
 			this.listener1.provideNextMove();
+		} else {
+			this.listener2.provideNextMove();
 		}
 	}
 	
@@ -429,7 +424,7 @@ public class GameImpl implements Game {
 	 */
 	private boolean movableFiguresLeft() {
 		for(Figure figure: this.board) {
-			if(figure instanceof Figure) {
+			if(figure != null) {
 				if(figure.getKind().isMovable()) {
 					return true;
 				}
@@ -441,7 +436,7 @@ public class GameImpl implements Game {
 	
 	private boolean movableFiguresLeftByPlayer(Player p) {
 		for(Figure figure: this.board) {
-			if(figure instanceof Figure) {
+			if(figure != null) {
 				if(figure.getKind().isMovable() && figure.belongsTo(p)) {
 					return true;
 				}
