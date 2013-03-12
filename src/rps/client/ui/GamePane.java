@@ -344,10 +344,12 @@ public class GamePane {
 		switch(n){
 			case 0:
 				this.printLog("Manuelle Aufstellung");
-				printLog("Setze die Flagge");				
+				printLog("Setze die Flagge");		
+				printLog("---");
 				break;
 			case 1:
 				this.printLog("Zufaellige Aufstellung");
+				printLog("---");
 				this.createRandomLineup();
 				redrawInitialAssignment();
 				int i=0;
@@ -389,7 +391,7 @@ public class GamePane {
 				this.redraw();
 				break;
 		}
-		
+		this.redraw();
 	}
 	
 	private void createRandomLineup(){
@@ -423,14 +425,12 @@ public class GamePane {
 			FigureKind from = this.oldBoard[game.getLastMove().getFrom()].getKind();
 			FigureKind to = this.oldBoard[game.getLastMove().getTo()].getKind();
 			
-			if(myTurn){
-				printLog("---");
+			if(this.oldBoard[game.getLastMove().getFrom()].belongsTo(this.player)){
 				printLog(this.player.getNick() + " greift an");
 				printLog(from+ " gegen " + to);
 				printLog("---");
 			}
 			else{
-				printLog("---");
 				printLog(game.getOpponent(this.player).getNick() + " greift an");
 				printLog(from+ " gegen " + to);
 				printLog("---");
@@ -589,9 +589,12 @@ public class GamePane {
 							positionFlag = position;
 							gamePhase = "initTrap";
 							printLog("Setze die Falle");
+							printLog("---");
 						}
-						else
+						else{
 							printLog("Nicht im Startgebiet");
+							printLog("---");
+						}
 						break;
 					case "initTrap":
 						if((position > 27) && (position != positionFlag)){
@@ -602,12 +605,14 @@ public class GamePane {
 							mixLineUp.setVisible(true);
 							gamePhase = "initLineUpChange";
 							printLog("Passe die Startaufstellung an");
+							printLog("---");
 						}
 						else
 							if(position == positionFlag)
 								printLog("Nicht auf die Flagge setzbar");
 							else
 								printLog("Nicht im Startgebiet");
+							printLog("---");
 							break;						
 					case "initLineUpChange":
 						lineUpChange(position);
@@ -658,6 +663,9 @@ public class GamePane {
 				catch (RemoteException re){
 					//RemoteException
 				}
+				catch (IllegalStateException ise){
+					//2movesException
+				}
 				finally{
 					this.cleanArrows();
 					this.redraw();
@@ -700,6 +708,7 @@ public class GamePane {
 			}
 			else{
 				printLog("Nicht moeglich");
+				printLog("---");
 			}
 			
 			choosenPosition = pos1;
@@ -764,9 +773,10 @@ public class GamePane {
 				this.arrows[pickedPosition].setIcon(boarderIcon);
 			}
 		}
-		else
+		else{
 			printLog("Nicht deine Figur");
-		
+			printLog("---");
+		}
 	}
 	
 	public void switchField(int pos1, int pos2){
@@ -857,6 +867,9 @@ public class GamePane {
 			//RemoteException
 		}
 		
+
+		
+
 		for (int i=0; i < 42; i++){
 			if(this.board[i] != null && this.board[i].belongsTo(this.player) && !this.board[i].isDiscovered()){
 				this.discovered[i].setIcon(discoveredIcon);
@@ -929,6 +942,9 @@ public class GamePane {
 				this.figures[i].setIcon(emptyIcon);
 			}
 				
+		}
+		if(this.gamePhase != "gamePhase"){
+			this.redrawInitialAssignment();
 		}
 	}
 }

@@ -133,6 +133,7 @@ public class GameController implements GameListener {
 	@Override
 	public void figureMoved() throws RemoteException {
 		gamePane.printTurnInfo("Warten auf anderen Spieler");
+		gamePane.myTurn = false;
 		gamePane.lastMoveArrow();
 		// TODO Auto-generated method stub
 	}
@@ -147,6 +148,8 @@ public class GameController implements GameListener {
 
 	@Override
 	public void provideChoiceAfterFightIsDrawn() throws RemoteException {
+		gamePane.printLog("Unentschieden! Neue Auswahl");
+		gamePane.printLog("---");
 		gamePane.askAfterDraw();
 	}
 
