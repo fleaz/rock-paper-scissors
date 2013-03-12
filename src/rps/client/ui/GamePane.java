@@ -659,15 +659,12 @@ public class GamePane {
 					//RemoteException
 				}
 				finally{
-					this.cleanArrows();
-					this.redraw();
+					this.lastMoveArrow();
 					choosen = false;
 					this.myTurn = false;
 				}	
 			}
-			this.cleanArrows();
 			this.lastMoveArrow();
-			this.redraw();
 			choosen = false;
 		}
 		else{
@@ -724,7 +721,7 @@ public class GamePane {
 		catch(RemoteException re){
 			//RemoteException
 		}
-		redraw();
+		this.redraw();
 	}
 	
 
