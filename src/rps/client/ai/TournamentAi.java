@@ -32,6 +32,8 @@ public class TournamentAi implements GameListener {
 	// flag for discovered statistic update after drawn attack
 	private boolean lastAttackWasDrawn = false;
 	
+	private int firstMoves = 0;
+	
 	// discovered stuff
 	private int discoveredRocks = 0, discoveredPapers = 0, discoveredScissors = 0, discoveredTraps = 0;
 	private ArrayList<Figure> discoveredFigures = new ArrayList<Figure>();
@@ -118,8 +120,31 @@ public class TournamentAi implements GameListener {
 	public void provideNextMove() throws RemoteException {
 		long moveCalculationStartedAt = System.nanoTime();
 
-		Move move = minimax(this.game.getField(), moveCalculationStartedAt);
-		this.game.move(this.player, move.getFrom(), move.getTo());
+		//"mini-eröffnungsbuch": 2 first moves für die Ai: zwei figuren in der mitte je 1 feld vor
+		/*if(firstMoves==0) {
+			if(this.game.getField()[32].getKind().isMovable()) {
+				this.game.move(this.player, 32, 25);
+			}
+			else {
+				this.game.move(this.player, 30, 23);
+			}
+			firstMoves++;
+		}
+		else if(firstMoves==1) {
+			if(this.game.getField()[31].getKind().isMovable()) {
+				this.game.move(this.player, 31, 24);
+			}
+			else {
+				this.game.move(this.player, 30, 23);
+			}
+			firstMoves++;
+		}
+		*/
+		//normaler Zug
+		//else {
+			Move move = minimax(this.game.getField(), moveCalculationStartedAt);
+			this.game.move(this.player, move.getFrom(), move.getTo());
+		//}
 	}
 
 	@Override
@@ -229,8 +254,10 @@ public class TournamentAi implements GameListener {
 				result = move;
 				score = minScore;
 			}
+			System.out.print(score +"  ");
 		}
 
+		System.out.println("");
 		return result;
 	}
 
@@ -397,19 +424,43 @@ public class TournamentAi implements GameListener {
 		}
 		// use a heuristic to score an unfinished game
 		else {
-			int ownFiguresOnBoard = 0, opponentFiguresOnBoard = 0;
 			
 			for(int i=0; i<board.length; i++) {
 				if(board[i] != null) {
 					if(board[i].belongsTo(getPlayer())) {
-						ownFiguresOnBoard += 1;
+
+						//je weiter vorne eine figur steht, desto höher ihre bewertung
+						if(i<7) { // letzte reihe
+							result += 80;
+						}
+						else if(i<14) { // vorletzte Reihe
+							result += 70;
+						}
+						else if(i<21) { // 4. Reihe
+							result += 67;
+						}
+						else if(i<28) { // 3. Reihe
+							result -= Math.abs(i - 24); //entfernung vom mittelfeld wird abgezogen -> Ai startet das Vorziehen über die Mitte
+							result += 50;
+						}
+						else if(i<35) { //2. Reihe
+							result += 30;
+						}
+						else { //hinterste reihe
+							//result += 0;
+						}
+						
+
+						
+						
+						result += 10000; // +10000 für jede eigene figur auf dem Feld
 					} else {
-						opponentFiguresOnBoard += 1;
+						result -= 10000; // -10000 für jede gegnerische figur auf dem Feld
 					}
 				}
 			}
 			
-			result = ownFiguresOnBoard - opponentFiguresOnBoard;
+			
 		}
 		
 		return result;
