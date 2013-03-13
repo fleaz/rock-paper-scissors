@@ -32,7 +32,7 @@ public class TournamentAi implements GameListener {
 	// flag for discovered statistic update after drawn attack
 	private boolean lastAttackWasDrawn = false;
 	
-	private int firstMoves = 0;
+	private int movesCounter = 0; //Zahl der ausgeführten Züge der KI
 	
 	// discovered stuff
 	private int discoveredRocks = 0, discoveredPapers = 0, discoveredScissors = 0, discoveredTraps = 0;
@@ -254,10 +254,9 @@ public class TournamentAi implements GameListener {
 				result = move;
 				score = minScore;
 			}
-			System.out.print(score +"  ");
 		}
 
-		System.out.println("");
+		movesCounter++;
 		return result;
 	}
 
@@ -428,39 +427,39 @@ public class TournamentAi implements GameListener {
 			for(int i=0; i<board.length; i++) {
 				if(board[i] != null) {
 					if(board[i].belongsTo(getPlayer())) {
-
-						//je weiter vorne eine figur steht, desto höher ihre bewertung
-						if(i<7) { // letzte reihe
-							result += 80;
-						}
-						else if(i<14) { // vorletzte Reihe
-							result += 70;
-						}
-						else if(i<21) { // 4. Reihe
-							result += 67;
-						}
-						else if(i<28) { // 3. Reihe
-							result -= Math.abs(i - 24); //entfernung vom mittelfeld wird abgezogen -> Ai startet das Vorziehen über die Mitte
-							result += 50;
-						}
-						else if(i<35) { //2. Reihe
-							result += 30;
-						}
-						else { //hinterste reihe
-							//result += 0;
-						}
 						
-
-						
+						if(movesCounter < 7) {//andere Bewertung für die ersten 7 züge -> Aufbau
+							//je weiter vorne eine figur steht, desto höher ihre bewertung
+							if(i<7) { // letzte reihe
+								result += 80;
+							}
+							else if(i<14) { // vorletzte Reihe
+								result += 70;
+							}
+							else if(i<21) { // 4. Reihe
+								result += 60;
+							}
+							else if(i<28) { // 3. Reihe
+								result -= Math.abs(i - 24); //entfernung vom mittelfeld wird abgezogen -> Ai startet das Vorziehen über die Mitte
+								result += 50;
+							}
+							else if(i<35) { //2. Reihe
+								result += 30;
+							}
+						}
+						else { //im weiteren spielverlauf (ab 8. Zug)
+							//jede reihe gleichwertig, hauptsache nach vorne
+							for(int a=35; a>i; a-=7) {
+								result++;
+							}							
+						}
 						
 						result += 10000; // +10000 für jede eigene figur auf dem Feld
 					} else {
 						result -= 10000; // -10000 für jede gegnerische figur auf dem Feld
 					}
 				}
-			}
-			
-			
+			}			
 		}
 		
 		return result;
