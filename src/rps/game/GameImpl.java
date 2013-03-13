@@ -190,9 +190,11 @@ public class GameImpl implements Game {
 			this.initialChoiceOfPlayer1 = null;
 			this.initialChoiceOfPlayer2 = null;
 			
-			// inform listeners about the game start
-			this.listener1.startGame();
-			this.listener2.startGame();
+			if(result != AttackResult.DRAW) {
+				// inform listeners about the game start
+				this.listener1.startGame();
+				this.listener2.startGame();
+			}
 		}
 	}
 
