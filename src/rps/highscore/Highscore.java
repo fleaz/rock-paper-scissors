@@ -1,103 +1,108 @@
 package rps.highscore;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.sql.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+/**
+ * The highscore-class is the interface between java and mysql.
+ *
+ */
 public class Highscore {
-    private ArrayList<Score> scores;
-
-    private static final String HIGHSCORE_FILE = "./highscore";
-
-    ObjectOutputStream outputStream = null;
-    ObjectInputStream inputStream = null;
-
+	
+    private static final String PW = "TVf5s6DT";
+    private static final String DB = "gdi1_project";
+    private static final String USER = "group105_w";
+    private static final String TABLE = "rps_highscore";
+    private static final String URL = "sql219.your-server.de";
+	private Connection conn;
+    
+	/**
+	 * Constructor, which loads the mysql-driver and builds the connection to the server
+	 */
     public Highscore() {
-        scores = new ArrayList<Score>();
+    	
+    	try //load the mysql-driver
+    	{ 
+    	    Class.forName("com.mysql.jdbc.Driver"); 
+    	} 
+    	catch(ClassNotFoundException cnfe) 
+    	{ 
+    	    System.out.println("Treiber kann nicht geladen werden: "+cnfe.getMessage()); 
+    	}
+    	
+    	try //build a connection to the server
+    	{ 
+    	    conn = DriverManager.getConnection("jdbc:mysql://" + URL + "/" + DB, USER, PW); 
+    	} 
+    	catch(SQLException sqle) 
+    	{ 
+    	    System.err.println("Verbindung ist fehlgeschlagen: " + sqle.getMessage()); 
+    	}
+    	
     }
     
-    public ArrayList<Score> getScores() {
-        loadScoreFile();
-        sort();
-        return scores;
+    /**
+     * Deconstructor, which closes the mysql-connection.
+     */
+    protected void finalize(){
+    	
+    	if (conn != null)
+    	{
+    	    try 
+    	    { 
+    	        conn.close(); 
+    	    }
+    	    catch(SQLException sqle) 
+    	    { 
+    	        System.err.println(sqle.getMessage()); 
+    	    }
+    	}
+    	
     }
     
-    private void sort() { // the idea to use a comparator to sort the highscore is taken by a tutorial - Will
-        ScoreComparison comparison = new ScoreComparison();
-        Collections.sort(scores, comparison);
+    /**
+     * Inserts a new entry in the online highscores.
+     * 
+     * @param score The score 
+     * @return true, if it worked 
+     * @throws SQLException 
+     */
+    public boolean insertHighscore(Score score) throws SQLException{
+    	
+    	StringBuffer query = new StringBuffer();
+    	
+    	query.append("INSERT INTO ").append(TABLE);
+    	query.append(" (nick, score, ai) VALUES (?, ?, ?);");
+    	
+    	
+    	PreparedStatement stmt = conn.prepareStatement(query.toString());
+    	stmt.setString(1, score.getNick());
+    	stmt.setInt(2, score.getScore());
+    	stmt.setString(3, score.getBeatenAi());
+    	
+    	int result = stmt.executeUpdate();
+    	
+    	return (result > 0);
+    	
     }
     
-    public void addScore(String name, int score) {
-        loadScoreFile();
-        scores.add(new Score(name, score));
-        saveScoreFile();
-    }
-    
-    public void loadScoreFile() {
-        try {
-            inputStream = new ObjectInputStream(new FileInputStream(HIGHSCORE_FILE));
-            scores = (ArrayList<Score>) inputStream.readObject();
-        } catch (FileNotFoundException fnfe) {
-        	//FileNotFoundException
-        } catch (IOException ioe) {
-        	//IOException
-        } catch (ClassNotFoundException cnfe) {
-            //ClassNotFoundException 
-        } finally {
-            try {
-                if (outputStream != null) {
-                    outputStream.flush();
-                    outputStream.close();
-                }
-            } catch (IOException ioe) {
-            	//IOException
-            }
-        }
-    }
-    
-    public void saveScoreFile() {
-        try {
-            outputStream = new ObjectOutputStream(new FileOutputStream(HIGHSCORE_FILE));
-            outputStream.writeObject(scores);
-        } catch (FileNotFoundException fnfe) {
-            //FileNotFoundException 
-        } catch (IOException ioe) {
-        	//IOException 
-        } finally {
-            try {
-                if (outputStream != null) {
-                    outputStream.flush();
-                    outputStream.close();
-                }
-            } catch (IOException e) {
-                //IOException 
-            }
-        }
-    }
-    
-    public String getHighscoreString() {
-        String highscoreString = "";
-        final int showEntries = 10;
-
-        ArrayList<Score> scores;
-        scores = getScores();
-
-        int i = 0;
-        int x = scores.size();
-        if (x > showEntries) {
-            x = showEntries;
-        }
-        while (i < x) {
-            highscoreString += (i + 1) + ".\t" + scores.get(i).getName() + "\t\t" + scores.get(i).getScore() + "\n";
-            i++;
-        }
-        return highscoreString;
+    /**
+     * Delivers the online highscore.
+     * 
+     * @return the highscore
+     * @throws SQLException
+     */
+    public ResultSet getHighscore() throws SQLException{
+    	
+    	StringBuffer query = new StringBuffer();
+    	
+    	query.append("SELECT nick, score, ai FROM ").append(TABLE);
+    	query.append(" ORDER BY score DESC, created_on ASC ");
+    	query.append("LIMIT 10;");
+    	
+    	PreparedStatement stmt = conn.prepareStatement(query.toString());
+    	
+    	return stmt.executeQuery();
+    	
     }
     
 }

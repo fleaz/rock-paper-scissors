@@ -1,22 +1,29 @@
 package rps.highscore;
 
-import java.io.Serializable;
-
-@SuppressWarnings("serial") // we want to use the generated serial, that's why we suppress the warning - Will
-public class Score  implements Serializable {
+/**
+ * The score-class, which contains the nick, the score and the beaten ai. 
+ *
+ */
+public class Score{
     private int score;
-    private String name;
+    private String nick;
+    private String beatenAi;
 
     public int getScore() {
         return score;
     }
 
-    public String getName() {
-        return name;
+    public String getNick() {
+        return nick;
+    }
+    
+    public String getBeatenAi() {
+        return beatenAi;
     }
 
-    public Score(String name, int score) {
+    public Score(String nick, int score, String beatenAi) {
         this.score = score;
-        this.name = name;
+        this.nick = nick;
+        this.beatenAi = beatenAi;
     }
 }
