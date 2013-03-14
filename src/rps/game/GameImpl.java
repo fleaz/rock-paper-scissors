@@ -345,12 +345,6 @@ public class GameImpl implements Game {
 				this.listener2.provideChoiceAfterFightIsDrawn();
 			}
 			
-			// inform listeners about attack
-			if(result != AttackResult.DRAW) {
-				this.listener1.figureAttacked();
-				this.listener2.figureAttacked();
-			}
-			
 			// update last move
 			Figure[] oldBoard = this.getLastMove().getOldField();
 			oldBoard[indexFrom] = offenderFigure;
@@ -359,6 +353,9 @@ public class GameImpl implements Game {
 			
 			this.choiceOfPlayer1 = null;
 			this.choiceOfPlayer2 = null;
+			
+			this.listener1.figureAttacked();
+			this.listener2.figureAttacked();
 		}
 	}
 
