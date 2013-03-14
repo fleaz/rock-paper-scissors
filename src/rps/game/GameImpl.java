@@ -230,10 +230,6 @@ public class GameImpl implements Game {
 				provideNextMove(movingPlayer);
 			}
 		} else { // attack
-			// inform listeners
-			this.listener1.figureAttacked();
-			this.listener2.figureAttacked();
-			
 			// get result
 			AttackResult result;
 			GameListener offender, defender;
@@ -291,6 +287,10 @@ public class GameImpl implements Game {
 					this.informAboutGameDrawn();
 				}
 			}
+			
+			// inform listeners
+			this.listener1.figureAttacked();
+			this.listener2.figureAttacked();
 		}	
 	}
 
