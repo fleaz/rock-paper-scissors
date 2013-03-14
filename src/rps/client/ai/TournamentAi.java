@@ -250,7 +250,7 @@ public class TournamentAi implements GameListener {
 			newBoard = performMove(board, move);
 			int minScore = minValue(newBoard, startTime, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
-			if(minScore > score) {
+			if(minScore >= score) {
 				result = move;
 				score = minScore;
 			}
