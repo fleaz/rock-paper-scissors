@@ -149,14 +149,12 @@ public class GameController implements GameListener {
 	public void figureMoved() throws RemoteException {
 		gamePane.printTurnInfo("Warten auf anderen Spieler");
 		gamePane.lastMoveArrow();
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void figureAttacked() throws RemoteException {
 		gamePane.printFight();
 		gamePane.lastMoveArrow();
-		// TODO Auto-generated method stub
 
 	}
 
@@ -173,7 +171,7 @@ public class GameController implements GameListener {
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
 			    "Sie haben leider verloren."+
-			    "Moechten sie ein neues Spiel starten?",
+			    "Möchten sie ein neues Spiel starten?",
 			    "Game over",
 			    JOptionPane.YES_NO_OPTION);
 		this.playAgain(n);
@@ -185,8 +183,8 @@ public class GameController implements GameListener {
 		gamePane.redraw();
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
-			    "Herzlichen Glueckwunsch. Sie haben gewonnen."+
-				"Moechten sie ein neues Spiel starten?",
+			    "Herzlichen Glückwunsch. Sie haben gewonnen."+
+				"Möchten sie ein neues Spiel starten?",
 			    "Game over",
 			    JOptionPane.YES_NO_OPTION);
 		this.playAgain(n);
@@ -198,7 +196,7 @@ public class GameController implements GameListener {
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
 			    "Das Spiel ist unentschieden."+
-			    "Moechten sie ein neues Spiel starten?",
+			    "Möchten sie ein neues Spiel starten?",
 			    "Game over",
 			    JOptionPane.YES_NO_OPTION);
 		this.playAgain(n);
