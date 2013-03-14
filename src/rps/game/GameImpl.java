@@ -203,7 +203,7 @@ public class GameImpl implements Game {
 	public void move(Player movingPlayer, int fromIndex, int toIndex) throws RemoteException {
 		if(movingPlayer.equals(this.lastMovedPlayer) 
 		&& this.movableFiguresLeftByPlayer(this.getOpponent(movingPlayer))) {
-			throw new IllegalStateException("Can't move two times"); // TODO Why is this exception thrown in the beginning sometimes?
+			throw new IllegalStateException("Can't move two times");
 		}
 		
 		// save this move as last move

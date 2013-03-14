@@ -51,7 +51,6 @@ public class TournamentAi implements GameListener {
 	public TournamentAi(int maxDurationForMoveInMilliSeconds, int maxDurationForAllMovesInMilliSeconds) {
 		this.maxDurationForMoveInMilliSeconds = maxDurationForMoveInMilliSeconds;
 		this.maxDurationForAllMovesInMilliSeconds = maxDurationForAllMovesInMilliSeconds;
-		// TODO Auto-generated constructor stub
 	}
 	
 	/**
@@ -63,7 +62,9 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
-		// TODO Auto-generated method stub
+		if (!player.equals(sender)) {
+			game.sendMessage(player, "you said: " + message);
+		}
 	}
 
 	@Override
@@ -111,7 +112,6 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void startGame() throws RemoteException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -194,7 +194,6 @@ public class TournamentAi implements GameListener {
 				+ this.discoveredScissors
 				+ this.discoveredTraps);
 		
-		// TODO add second counter for simulation discovers
 		if(kind == FigureKind.ROCK) {
 			result = (4.0 - this.discoveredRocks) / undiscoveredFiguresCount;
 		} else if(kind == FigureKind.PAPER) {
