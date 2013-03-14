@@ -39,7 +39,7 @@ public class TournamentAi implements GameListener {
 	 */
 	private boolean lastAttackWasDrawn;
 	
-	private int movesCounter = 0; //Zahl der ausgeführten Züge der KI
+	private int movesCounter; //Zahl der ausgeführten Züge der KI
 	
 	/*
 	 * discovered statistic
@@ -140,7 +140,6 @@ public class TournamentAi implements GameListener {
 		// initial choice was already given
 		// this means that the other player has choosen the same kind
 		if(this.isInitialChoiceAlreadyProvided) {
-			System.out.println("provide initial choice: " + this.providedInitialChoice);
 			this.lastFigureKindChoices.add(this.providedInitialChoice);
 		}
 
@@ -235,7 +234,6 @@ public class TournamentAi implements GameListener {
 	public void provideChoiceAfterFightIsDrawn() throws RemoteException {
 		// after drawn fight choices were also drawn
 		if(this.isChoiceAfterDrawnFightProvided) {
-			System.out.println("provide choise after fight is drawn: " + this.providedChoiceAfterDrawnFight);
 			this.lastFigureKindChoices.add(this.providedChoiceAfterDrawnFight);
 		}
 		
@@ -549,16 +547,109 @@ public class TournamentAi implements GameListener {
 		return newBoard;
 	}
 	
-	
-
+	/**
+	 * Returns an opponent choice with preference for previous choices.
+	 * @return
+	 */
 	private FigureKind getRandomChoiceWithLastProvidedPrefered() {
-		// TODO Auto-generated method stub
-		return BasicAi.randomChoice();
+		Random random = new Random();
+		
+		int rockChoiceAmount = getRockChoiceCount();
+		int paperChoiceAmount = getPaperChoiceCount();
+		int scissorsChoiceAmount = getScissorsChoiceCount();
+		
+		int choiceSum = rockChoiceAmount + paperChoiceAmount + scissorsChoiceAmount;
+		int randomNumber = random.nextInt(choiceSum);
+		
+		FigureKind choice = null;
+		
+		if(randomNumber < rockChoiceAmount) {
+			choice = FigureKind.ROCK;
+		} else if(randomNumber < (rockChoiceAmount + paperChoiceAmount)) {
+			choice = FigureKind.PAPER;
+		} else {
+			choice = FigureKind.SCISSORS;
+		}
+		
+		return choice;
 	}
 
+	/**
+	 * Returns a choice for the ai.
+	 * 
+	 * The method returns the figure kind that would have one the most times
+	 * in the history.
+	 * 
+	 * @return
+	 */
 	private FigureKind getChoiceByLastProvidedChoicesOfTheOpponent() {
-		// TODO Auto-generated method stub
-		return BasicAi.randomChoice();
+		int rocksCounter, scissorsCounter, paperCounter;
+		FigureKind result = null;
+		
+		rocksCounter = getRockChoiceCount();
+		scissorsCounter = getScissorsChoiceCount();
+		paperCounter = getPaperChoiceCount();
+		
+		if(rocksCounter >= paperCounter && rocksCounter >= scissorsCounter) {
+			result = FigureKind.PAPER;
+		} else if(paperCounter >= rocksCounter && paperCounter >= scissorsCounter) {
+			result = FigureKind.SCISSORS; 
+		} else if(scissorsCounter >= paperCounter && scissorsCounter >= rocksCounter) {
+			result = FigureKind.ROCK;
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Get amount of papers in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getPaperChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.PAPER) {
+				counter++;
+			}
+		}
+		
+		return counter;
+	}
+
+	/**
+	 * Get amount of scissors in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getScissorsChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.SCISSORS) {
+				counter++;
+			}
+		}
+		
+		return counter;
+	}
+
+	/**
+	 * Get amount of rocks in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getRockChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.ROCK) {
+				counter++;
+			}
+		}
+		
+		return counter;
 	}
 
 	/**
@@ -714,26 +805,20 @@ public class TournamentAi implements GameListener {
 		// AI won
 		if(boardIsUnmodified) {
 			if(this.providedInitialChoice == FigureKind.PAPER) {
-				System.out.println("updated initial choice: " + FigureKind.ROCK);
 				this.lastFigureKindChoices.add(FigureKind.ROCK);
 			} else if(this.providedInitialChoice == FigureKind.ROCK) {
-				System.out.println("updated initial choice: " + FigureKind.SCISSORS);
 				this.lastFigureKindChoices.add(FigureKind.SCISSORS);
 			} else if(this.providedInitialChoice == FigureKind.SCISSORS) {
-				System.out.println("updated initial choice: " + FigureKind.PAPER);
 				this.lastFigureKindChoices.add(FigureKind.PAPER);
 			}
 		} 
 		// opponent won 
 		else {
 			if(this.providedInitialChoice == FigureKind.PAPER) {
-				System.out.println("updated initial choice: " + FigureKind.SCISSORS);
 				this.lastFigureKindChoices.add(FigureKind.SCISSORS);
 			} else if(this.providedInitialChoice == FigureKind.ROCK) {
-				System.out.println("updated initial choice: " + FigureKind.PAPER);
 				this.lastFigureKindChoices.add(FigureKind.PAPER);
 			} else if(this.providedInitialChoice == FigureKind.SCISSORS) {
-				System.out.println("updated initial choice: " + FigureKind.ROCK);
 				this.lastFigureKindChoices.add(FigureKind.ROCK);
 			}
 		}
@@ -753,7 +838,6 @@ public class TournamentAi implements GameListener {
 			opponentChoice = oldBoard[indexTo].getKind();
 		}
 		
-		System.out.println("update choice drawn fight: " + opponentChoice);
 		this.lastFigureKindChoices.add(opponentChoice);
 		this.isChoiceAfterDrawnFightProvided = false;
 	}
@@ -810,7 +894,6 @@ public class TournamentAi implements GameListener {
 			}
 		}
 		
-		System.out.println(discoveredFigure);
 		this.discoveredFigures.add(discoveredFigure);
 		
 		// increment the type counter
@@ -841,5 +924,6 @@ public class TournamentAi implements GameListener {
 		this.providedInitialChoice = null;
 		this.isInitialChoiceAlreadyProvided = false;
 		this.isChoiceAfterDrawnFightProvided = false;
+		this.movesCounter = 0;
 	}
 }
