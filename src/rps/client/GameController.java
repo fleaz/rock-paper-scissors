@@ -1,6 +1,5 @@
 package rps.client;
 
-import static javax.swing.JOptionPane.showMessageDialog;
 import static rps.network.NetworkUtil.hostNetworkGame;
 
 import java.rmi.RemoteException;
@@ -135,8 +134,6 @@ public class GameController implements GameListener {
 
 	@Override
 	public void startGame() throws RemoteException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

@@ -7,8 +7,6 @@ import java.util.Random;
 
 import rps.client.GameListener;
 import rps.game.Game;
-import rps.game.GameImpl;
-import rps.game.GameImplFixture;
 import rps.game.data.AttackResult;
 import rps.game.data.Figure;
 import rps.game.data.FigureKind;
@@ -32,7 +30,7 @@ public class TournamentAi implements GameListener {
 	// flag for discovered statistic update after drawn attack
 	private boolean lastAttackWasDrawn = false;
 	
-	private int movesCounter = 0; //Zahl der ausgeführten Züge der KI
+	private int movesCounter = 0; //Move counter
 	
 	// discovered stuff
 	private int discoveredRocks = 0, discoveredPapers = 0, discoveredScissors = 0, discoveredTraps = 0;
@@ -42,7 +40,7 @@ public class TournamentAi implements GameListener {
 	private ArrayList<FigureKind> lastFigureKindChoices = new ArrayList<FigureKind>();
 
 	/**
-	 * Create tournamen ai.
+	 * Create tournament ai.
 	 * 
 	 * Tournament AI uses the minimax algorithm to provide moves.
 	 * The algorithm uses alpha-beta-pruning for optimization.
@@ -53,7 +51,6 @@ public class TournamentAi implements GameListener {
 	public TournamentAi(int maxDurationForMoveInMilliSeconds, int maxDurationForAllMovesInMilliSeconds) {
 		this.maxDurationForMoveInMilliSeconds = maxDurationForMoveInMilliSeconds;
 		this.maxDurationForAllMovesInMilliSeconds = maxDurationForAllMovesInMilliSeconds;
-		// TODO Auto-generated constructor stub
 	}
 	
 	/**
@@ -65,7 +62,9 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
-		// TODO Auto-generated method stub
+		if (!player.equals(sender)) {
+			game.sendMessage(player, "you said: " + message);
+		}
 	}
 
 	@Override
@@ -113,7 +112,6 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void startGame() throws RemoteException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -196,7 +194,6 @@ public class TournamentAi implements GameListener {
 				+ this.discoveredScissors
 				+ this.discoveredTraps);
 		
-		// TODO add second counter for simulation discovers
 		if(kind == FigureKind.ROCK) {
 			result = (4.0 - this.discoveredRocks) / undiscoveredFiguresCount;
 		} else if(kind == FigureKind.PAPER) {
@@ -250,7 +247,7 @@ public class TournamentAi implements GameListener {
 			newBoard = performMove(board, move);
 			int minScore = minValue(newBoard, startTime, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
-			if(minScore > score) {
+			if(minScore >= score) {
 				result = move;
 				score = minScore;
 			}

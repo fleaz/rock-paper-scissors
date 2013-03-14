@@ -149,7 +149,7 @@ public class GamePane {
 			picture = new JLabel(new ImageIcon(ImageIO.read(new File("img/aTrap.jpg"))));
 		}
 		catch(IOException e){
-			//TODO
+			e.printStackTrace();
 		}
 		memePane.add(picture);
 		memePane.setLocationRelativeTo(null);
@@ -704,7 +704,7 @@ public class GamePane {
 						}
 					}
 					catch(IndexOutOfBoundsException ioobe){
-						//TODO IndexOutOfBoundsException
+						ioobe.printStackTrace();
 					}
 					if(counter>0){
 						choosenPosition = pos1;

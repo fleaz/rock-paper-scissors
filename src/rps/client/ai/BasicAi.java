@@ -26,7 +26,7 @@ public class BasicAi implements GameListener {
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
 		if (!player.equals(sender)) {
-			//game.sendMessage(player, "you said: " + message);
+			game.sendMessage(player, "you said: " + message);
 		}
 	}
 	
