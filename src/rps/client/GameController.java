@@ -1,6 +1,5 @@
 package rps.client;
 
-import static javax.swing.JOptionPane.showMessageDialog;
 import static rps.network.NetworkUtil.hostNetworkGame;
 
 import java.rmi.RemoteException;
