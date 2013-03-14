@@ -19,28 +19,52 @@ import rps.game.data.Player;
  */
 public class TournamentAi implements GameListener {
 
-	// time limits
+	/*
+	 * Time limits for tournament mode.
+	 * 
+	 * 75% of max move duration are used as recursion anchor in the minimax
+	 * algorithm.
+	 */
 	private final int maxDurationForMoveInMilliSeconds;
-	private final int maxDurationForAllMovesInMilliSeconds;
+	//private final int maxDurationForAllMovesInMilliSeconds;
 	
-	// game environment
+	/*
+	 * game related objects
+	 */
 	private Game game;
 	private Player player = new Player("Gruppe (#105)");
 	
-	// flag for discovered statistic update after drawn attack
-	private boolean lastAttackWasDrawn = false;
+	/*
+	 * flags
+	 */
+	private boolean lastAttackWasDrawn;
 	
-	private int movesCounter = 0; //Move counter
+	private int movesCounter; //Zahl der ausgeführten Züge der KI
 	
-	// discovered stuff
-	private int discoveredRocks = 0, discoveredPapers = 0, discoveredScissors = 0, discoveredTraps = 0;
-	private ArrayList<Figure> discoveredFigures = new ArrayList<Figure>();
+	/*
+	 * discovered statistic
+	 */
+	private int discoveredRocks, discoveredPapers, discoveredScissors, discoveredTraps;
+	private ArrayList<Figure> discoveredFigures;
 	
-	// kind choice memory
-	private ArrayList<FigureKind> lastFigureKindChoices = new ArrayList<FigureKind>();
+	/*
+	 * choice management
+	 */
+	private ArrayList<FigureKind> lastFigureKindChoices;
+	private FigureKind providedInitialChoice;
+
+	private FigureKind providedChoiceAfterDrawnFight;
+	private boolean isInitialChoiceAlreadyProvided;
+
+	private boolean isChoiceAfterDrawnFightProvided;
+	private boolean lastMoveWasAnAttack;
 
 	/**
+<<<<<<< HEAD
 	 * Create tournament ai.
+=======
+	 * Create tournament AI.
+>>>>>>> tournament-ai
 	 * 
 	 * Tournament AI uses the minimax algorithm to provide moves.
 	 * The algorithm uses alpha-beta-pruning for optimization.
@@ -50,7 +74,8 @@ public class TournamentAi implements GameListener {
 	 */
 	public TournamentAi(int maxDurationForMoveInMilliSeconds, int maxDurationForAllMovesInMilliSeconds) {
 		this.maxDurationForMoveInMilliSeconds = maxDurationForMoveInMilliSeconds;
-		this.maxDurationForAllMovesInMilliSeconds = maxDurationForAllMovesInMilliSeconds;
+
+		resetAI();
 	}
 	
 	/**
@@ -67,6 +92,12 @@ public class TournamentAi implements GameListener {
 		}
 	}
 
+	/**
+	 * Provide an initial assignment.
+	 * 
+	 * In a random column the flag is placed behind a trap. The other
+	 * figures are randomly placed on the remaining positions.
+	 */
 	@Override
 	public void provideInitialAssignment(Game game) throws RemoteException {
 		this.game = game;
@@ -105,18 +136,53 @@ public class TournamentAi implements GameListener {
 		this.game.setInitialAssignment(this.player, initialAssignment);
 	}
 
+	/**
+	 * Provides an initial choice.
+	 * 
+	 *  The choice is random. If it is not the first initial choice, the old
+	 *  initial choice is added to the last choices statistic.
+	 */
 	@Override
 	public void provideInitialChoice() throws RemoteException {
-		this.game.setInitialChoice(getPlayer(), BasicAi.randomChoice());
+		// initial choice was already given
+		// this means that the other player has choosen the same kind
+		if(this.isInitialChoiceAlreadyProvided) {
+			this.lastFigureKindChoices.add(this.providedInitialChoice);
+		}
+
+		FigureKind initialChoice = BasicAi.randomChoice();
+		this.providedInitialChoice = initialChoice;
+		this.isInitialChoiceAlreadyProvided = true;
+		this.game.setInitialChoice(getPlayer(), initialChoice);
 	}
 
 	@Override
-	public void startGame() throws RemoteException {
-	}
+	public void startGame() throws RemoteException {}
 
+	/**
+	 * Provide next move.
+	 * 
+	 * Uses the minimax algorithm to provide a move.
+	 */
 	@Override
 	public void provideNextMove() throws RemoteException {
 		long moveCalculationStartedAt = System.nanoTime();
+		
+		// first move to provide
+		if(this.isInitialChoiceAlreadyProvided) {
+			updateChoicesStatisticWithInitialChoice(this.game.getField());
+			this.isInitialChoiceAlreadyProvided = false;
+		}
+		
+		if(this.isChoiceAfterDrawnFightProvided) {
+			updateProvidedChoicesStatisticAfterDrawnFight();
+			this.isChoiceAfterDrawnFightProvided = false;
+		}
+		
+		if(this.lastMoveWasAnAttack || this.lastAttackWasDrawn) {
+			updateDiscoveredStatistic(this.game.getLastMove());
+			this.lastMoveWasAnAttack = false;
+		}
 
 		//"mini-eröffnungsbuch": 2 first moves für die Ai: zwei figuren in der mitte je 1 feld vor
 		/*if(firstMoves==0) {
@@ -147,81 +213,87 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void figureMoved() throws RemoteException {}
+	
+	/**
+	 * Called when a figure is attacked.
+	 * 
+	 * Then the discovered statistic is updated with the figure involved
+	 * in the attack.
+	 */
 
 	@Override
 	public void figureAttacked() throws RemoteException {
 		// update statistic about discovered figures
-		updateDiscoveredStatistic(this.game.getLastMove());
+		// updateDiscoveredStatistic(this.game.getLastMove());
+		this.lastMoveWasAnAttack = true;
 	}
 
 
+	/**
+	 * Called when a choice must be provided after a drawn fight.
+	 * 
+	 * The choice is determined with the last provided choices of the
+	 * opponent. Although a flag is set so that the new created opponent
+	 * figure with the new kind won't be evaluated in the discovered
+	 * statistic update method.
+	 */
 	@Override
 	public void provideChoiceAfterFightIsDrawn() throws RemoteException {
-		this.game.setUpdatedKindAfterDraw(player, BasicAi.randomChoice());
+		// after drawn fight choices were also drawn
+		if(this.isChoiceAfterDrawnFightProvided) {
+			this.lastFigureKindChoices.add(this.providedChoiceAfterDrawnFight);
+		}
+		
+		FigureKind choice = getChoiceByLastProvidedChoicesOfTheOpponent();
+		this.providedChoiceAfterDrawnFight = choice;
+		this.isChoiceAfterDrawnFightProvided = true;
+		
+		this.game.setUpdatedKindAfterDraw(player, choice);
+		
 		this.lastAttackWasDrawn = true;
 	}
 	
+	/**
+	 * Game is lost.
+	 * 
+	 * The AI is reseted.
+	 */
 
 	@Override
-	public void gameIsLost() throws RemoteException {}
+	public void gameIsLost() throws RemoteException {
+		resetAI();
+	}
 	
+	/**
+	 * Game is won.
+	 * 
+	 * The AI is reseted.
+	 */
 
 	@Override
-	public void gameIsWon() throws RemoteException {}
+	public void gameIsWon() throws RemoteException {
+		resetAI();
+	}
 	
-
+	/**
+	 * Game is drawn
+	 * 
+	 * The AI is reseted.
+	 */
 	@Override
-	public void gameIsDrawn() throws RemoteException {}
+	public void gameIsDrawn() throws RemoteException {
+		resetAI();
+	}
 	
+	/**
+	 * Print AI Object as String.
+	 */
 
 	@Override
 	public String toString() {
 		return "Tournament AI";
 	}
 	
-	
-	/**
-	 * Return the chance that a hidden figure the kind provided.
-	 * 
-	 * @param kind
-	 * @return
-	 */
-	public double getChanceByFigureKind(FigureKind kind) {
-		double result = 0.0;
-		
-		int undiscoveredFiguresCount = 14 - (this.discoveredRocks
-				+ this.discoveredPapers
-				+ this.discoveredScissors
-				+ this.discoveredTraps);
-		
-		if(kind == FigureKind.ROCK) {
-			result = (4.0 - this.discoveredRocks) / undiscoveredFiguresCount;
-		} else if(kind == FigureKind.PAPER) {
-			result = (4.0 - this.discoveredPapers) / undiscoveredFiguresCount;
-		} else if(kind == FigureKind.SCISSORS) {
-			result = (4.0 - this.discoveredScissors) / undiscoveredFiguresCount;
-		} else if(kind == FigureKind.TRAP) {
-			result = (1.0 - this.discoveredTraps) / undiscoveredFiguresCount;
-		} else if(kind == FigureKind.FLAG) {
-			result = 1.0 / undiscoveredFiguresCount;
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Get the figure kind that has most chance to be the kind that a hidden figure of the opponent has.
-	 * @return
-	 */
-	public FigureKind getFigureKindByStatistic() {
-		if(this.discoveredPapers >= this.discoveredRocks && this.discoveredPapers >= this.discoveredScissors) {
-			return FigureKind.PAPER;
-		} else if(this.discoveredRocks >= this.discoveredPapers && this.discoveredRocks >= this.discoveredScissors) {
-			return FigureKind.ROCK;
-		} else {
-			return FigureKind.SCISSORS;
-		}
-	}
 
 	/**
 	 * minimax algorithm
@@ -256,53 +328,7 @@ public class TournamentAi implements GameListener {
 		movesCounter++;
 		return result;
 	}
-
-	/**
-	 * Replace hidden figures on a board with possible figures for the player.
-	 * 
-	 * Uses the discovered statistic to replace the hidden figures on a board
-	 * with real figure kinds. This is used for simulation in the minimax algorithm.
-	 * 
-	 * @param board
-	 * @return
-	 * @throws RemoteException
-	 */
-	private Figure[] replaceHiddenFiguresWithPossibleRealFigures(Figure[] board)
-			throws RemoteException {
-		// clone old board
-		Figure[] newBoard = board.clone();
-		
-		// create array with remaining figure kinds for hidden figures
-		ArrayList<FigureKind> hiddenFigures = new ArrayList<FigureKind>();
-		for(int i=this.discoveredRocks; i<4; i++) {
-			hiddenFigures.add(FigureKind.ROCK);
-		}
-		for(int i=this.discoveredPapers; i<4; i++) {
-			hiddenFigures.add(FigureKind.PAPER);
-		}
-		for(int i=this.discoveredScissors; i<4; i++) {
-			hiddenFigures.add(FigureKind.SCISSORS);
-		}
-		if(this.discoveredTraps == 0) {
-			hiddenFigures.add(FigureKind.TRAP);
-		}
-		hiddenFigures.add(FigureKind.FLAG);
-		
-		// shuffle array to get a random allocation
-		Collections.shuffle(hiddenFigures);
-		
-		// replace hidden figures with figure kinds from the shuffled array
-		int j=0;
-		for(int i=0; i<newBoard.length; i++) {
-			if(newBoard[i] != null && newBoard[i].getKind() == FigureKind.HIDDEN) {
-				newBoard[i] = new Figure(hiddenFigures.get(j), getOpponent());
-				j++;
-			}
-		}
-		
-		// return board without hidden figures
-		return newBoard;
-	}
+	
 	
 	/**
 	 * max-Function of the minimax algorithm.
@@ -391,18 +417,24 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * Return whether game is over.
+	 * Return whether the game is over.
+	 * 
+	 * This is the case for a won, lost oder drawn end state.
 	 * 
 	 * @return
 	 * @throws RemoteException 
 	 */
 	public boolean terminalTest(Figure[] board) throws RemoteException {
-		return gameIsDefinitlyDrawn(board) || gameIsDefinitlyWon(board) || gameIsLost(board);
+		return gameIsDrawn(board) || gameIsDefinitlyWon(board) || gameIsLost(board);
 	}
 	
 	
 	/**
 	 * Determines a score for a given state.
+	 * 
+	 * If the game is lost, drawn or won, a static value is returned.
+	 * Otherwise the difference between the own remaining figures and the
+	 * opponent remaining figures is calculated.
 	 * 
 	 * @return
 	 * @throws RemoteException 
@@ -415,7 +447,7 @@ public class TournamentAi implements GameListener {
 			result = Integer.MIN_VALUE;
 		} else if(gameIsDefinitlyWon(board)) {
 			result = Integer.MAX_VALUE;
-		} else if(gameIsDefinitlyDrawn(board)) {
+		} else if(gameIsDrawn(board)) {
 			result = 0;
 		}
 		// use a heuristic to score an unfinished game
@@ -463,9 +495,11 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * Updates a board with a move.
+	 * Updates a board with a given move.
 	 * 
-	 * Used in the minimax algorithm.
+	 * This is used in the minimax algorithm to update a state. The method is
+	 * similar to the move-Method in GameImpl but does not do any listener
+	 * calls.
 	 * 
 	 * @param board
 	 * @param move
@@ -489,8 +523,6 @@ public class TournamentAi implements GameListener {
 			FigureKind toKind = board[toIndex].getKind();
 			AttackResult attackResult = fromKind.attack(toKind);
 			
-			//this.updateDiscoveredStatistic(move);
-			
 			if(attackResult == AttackResult.WIN_AGAINST_FLAG || attackResult == AttackResult.WIN) {
 				newBoard[toIndex] = board[fromIndex];
 				newBoard[fromIndex] = null;
@@ -500,8 +532,8 @@ public class TournamentAi implements GameListener {
 				newBoard[fromIndex] = null;
 				newBoard[toIndex] = null;
 			} else if(attackResult == AttackResult.DRAW) {
-				FigureKind aiChoice = this.getFigureKindByStatistic();
-				FigureKind opponentChoice = BasicAi.randomChoice();
+				FigureKind aiChoice = getChoiceByLastProvidedChoicesOfTheOpponent();
+				FigureKind opponentChoice = getRandomChoiceWithLastProvidedPrefered();
 				
 				Figure aiFigure = new Figure(aiChoice, this.player);
 				Figure opponentFigure = new Figure(opponentChoice, getOpponent());
@@ -521,6 +553,110 @@ public class TournamentAi implements GameListener {
 		return newBoard;
 	}
 	
+	/**
+	 * Returns an opponent choice with preference for previous choices.
+	 * @return
+	 */
+	private FigureKind getRandomChoiceWithLastProvidedPrefered() {
+		Random random = new Random();
+		
+		int rockChoiceAmount = getRockChoiceCount();
+		int paperChoiceAmount = getPaperChoiceCount();
+		int scissorsChoiceAmount = getScissorsChoiceCount();
+		
+		int choiceSum = rockChoiceAmount + paperChoiceAmount + scissorsChoiceAmount;
+		int randomNumber = random.nextInt(choiceSum);
+		
+		FigureKind choice = null;
+		
+		if(randomNumber < rockChoiceAmount) {
+			choice = FigureKind.ROCK;
+		} else if(randomNumber < (rockChoiceAmount + paperChoiceAmount)) {
+			choice = FigureKind.PAPER;
+		} else {
+			choice = FigureKind.SCISSORS;
+		}
+		
+		return choice;
+	}
+
+	/**
+	 * Returns a choice for the ai.
+	 * 
+	 * The method returns the figure kind that would have one the most times
+	 * in the history.
+	 * 
+	 * @return
+	 */
+	private FigureKind getChoiceByLastProvidedChoicesOfTheOpponent() {
+		int rocksCounter, scissorsCounter, paperCounter;
+		FigureKind result = null;
+		
+		rocksCounter = getRockChoiceCount();
+		scissorsCounter = getScissorsChoiceCount();
+		paperCounter = getPaperChoiceCount();
+		
+		if(rocksCounter >= paperCounter && rocksCounter >= scissorsCounter) {
+			result = FigureKind.PAPER;
+		} else if(paperCounter >= rocksCounter && paperCounter >= scissorsCounter) {
+			result = FigureKind.SCISSORS; 
+		} else if(scissorsCounter >= paperCounter && scissorsCounter >= rocksCounter) {
+			result = FigureKind.ROCK;
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Get amount of papers in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getPaperChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.PAPER) {
+				counter++;
+			}
+		}
+		
+		return counter;
+	}
+
+	/**
+	 * Get amount of scissors in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getScissorsChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.SCISSORS) {
+				counter++;
+			}
+		}
+		
+		return counter;
+	}
+
+	/**
+	 * Get amount of rocks in previous opponent choices.
+	 * 
+	 * @return
+	 */
+	private int getRockChoiceCount() {
+		int counter=0;
+		
+		for(int i=0; i<this.lastFigureKindChoices.size(); i++) {
+			if(this.lastFigureKindChoices.get(i) == FigureKind.ROCK) {
+				counter++;
+			}
+		}
+		
+		return counter;
+	}
 
 	/**
 	 * Returns the opponent player.
@@ -531,6 +667,187 @@ public class TournamentAi implements GameListener {
 	private Player getOpponent() throws RemoteException {
 		return this.game.getOpponent(this.player);
 	}
+	
+	/**
+	 * Replace hidden figures on a board with possible figures for the player.
+	 * 
+	 * Uses the discovered figures statistic to replace opponent figures of
+	 * hidden kind with figures with a real figure kind. The right amount of
+	 * each kind is secured through the discovered figures statistic.
+	 * 
+	 * @param board
+	 * @return
+	 * @throws RemoteException
+	 */
+	private Figure[] replaceHiddenFiguresWithPossibleRealFigures(Figure[] board)
+			throws RemoteException {
+		// clone old board
+		Figure[] newBoard = board.clone();
+		
+		// create array with remaining figure kinds for hidden figures
+		ArrayList<FigureKind> hiddenFigures = new ArrayList<FigureKind>();
+		for(int i=this.discoveredRocks; i<4; i++) {
+			hiddenFigures.add(FigureKind.ROCK);
+		}
+		for(int i=this.discoveredPapers; i<4; i++) {
+			hiddenFigures.add(FigureKind.PAPER);
+		}
+		for(int i=this.discoveredScissors; i<4; i++) {
+			hiddenFigures.add(FigureKind.SCISSORS);
+		}
+		if(this.discoveredTraps == 0) {
+			hiddenFigures.add(FigureKind.TRAP);
+		}
+		hiddenFigures.add(FigureKind.FLAG);
+		
+		// shuffle array to get a random allocation
+		Collections.shuffle(hiddenFigures);
+		
+		// replace hidden figures with figure kinds from the shuffled array
+		int j=0;
+		for(int i=0; i<newBoard.length; i++) {
+			if(newBoard[i] != null && newBoard[i].getKind() == FigureKind.HIDDEN) {
+				newBoard[i] = new Figure(hiddenFigures.get(j), getOpponent());
+				j++;
+			}
+		}
+		
+		// return board without hidden figures
+		return newBoard;
+	}
+	
+	/**
+	 * Determines whether the game is definitely won.
+	 * 
+	 * Checks whether the opponent has no figures left on the board.
+	 * Game could be won even if the method returns false. This is
+	 * because the flag is hidden and only undiscovered by the FigureHidingGame
+	 * decorator in a real game and not in a simulation. However, if no
+	 * figures are left, the game is definitly won.
+	 * 
+	 * @param board
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean gameIsDefinitlyWon(Figure[] board) throws RemoteException {
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null && board[i].belongsTo(getOpponent())) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Determines whether the game is lost.
+	 * 
+	 * The game is lost if the own flag is not on the board anymore.
+	 * 
+	 * @param board
+	 * @return
+	 */
+
+	private boolean gameIsLost(Figure[] board) {
+		boolean gameIsLost = true;
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null && board[i].belongsTo(getPlayer()) && board[i].getKind() == FigureKind.FLAG) {
+				gameIsLost = false;
+			}
+		}
+		return gameIsLost;
+	}
+	
+	/**
+	 * Determines whether the game is drawn.
+	 * 
+	 * The method checks whether the AI has no movable figures left and the
+	 * opponent has only one figure left (the flag) or two figures left and
+	 * the flag was not discovered yet (then the opponent has only his trap
+	 * and flag remaining.
+	 * 
+	 * @param board
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean gameIsDrawn(Figure[] board) throws RemoteException {
+		int opponentFigures = 0;
+		
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null) {
+				if(board[i].belongsTo(getPlayer()) && board[i].getKind().isMovable()) {
+					return false;
+				}
+				
+				if(board[i].belongsTo(getOpponent())) {
+					opponentFigures++;
+				}
+			}
+		}
+		
+		return (opponentFigures==1 || (opponentFigures==2 && this.discoveredTraps==0));
+	}
+	
+	/**
+	 * Updates the last choices statistic with the initial choice.
+	 * 
+	 * This method is called on the first move provided. If the field
+	 * is unmodified, the AI won the initial choice battle and the
+	 * opponents choice was the kind loosing against the kind provided
+	 * by the AI and this one is added. Otherwise the kind which wins against
+	 * the choice provided by the AI is added to the statistic.
+	 * 
+	 * @param board
+	 */
+	private void updateChoicesStatisticWithInitialChoice(Figure[] board) {
+		boolean boardIsUnmodified = true;
+		for(int i=7, j=28; i<14; i++, j++) {
+			if(board[i] == null || board[j] == null) {
+				boardIsUnmodified = false;
+				break;
+			}
+		}
+		
+		// AI won
+		if(boardIsUnmodified) {
+			if(this.providedInitialChoice == FigureKind.PAPER) {
+				this.lastFigureKindChoices.add(FigureKind.ROCK);
+			} else if(this.providedInitialChoice == FigureKind.ROCK) {
+				this.lastFigureKindChoices.add(FigureKind.SCISSORS);
+			} else if(this.providedInitialChoice == FigureKind.SCISSORS) {
+				this.lastFigureKindChoices.add(FigureKind.PAPER);
+			}
+		} 
+		// opponent won 
+		else {
+			if(this.providedInitialChoice == FigureKind.PAPER) {
+				this.lastFigureKindChoices.add(FigureKind.SCISSORS);
+			} else if(this.providedInitialChoice == FigureKind.ROCK) {
+				this.lastFigureKindChoices.add(FigureKind.PAPER);
+			} else if(this.providedInitialChoice == FigureKind.SCISSORS) {
+				this.lastFigureKindChoices.add(FigureKind.ROCK);
+			}
+		}
+	}
+	
+
+	private void updateProvidedChoicesStatisticAfterDrawnFight() throws RemoteException {
+		Move lastMove = this.game.getLastMove();
+		int indexFrom = lastMove.getFrom();
+		int indexTo = lastMove.getTo();
+		Figure[] oldBoard = lastMove.getOldField();
+		
+		FigureKind opponentChoice;
+		if(oldBoard[indexFrom].belongsTo(getOpponent())) {
+			opponentChoice = oldBoard[indexFrom].getKind();
+		} else {
+			opponentChoice = oldBoard[indexTo].getKind();
+		}
+		
+		this.lastFigureKindChoices.add(opponentChoice);
+		this.isChoiceAfterDrawnFightProvided = false;
+	}
+	
 	
 	/**
 	 * Update statistic about discovered figures.
@@ -597,41 +914,22 @@ public class TournamentAi implements GameListener {
 		}
 	}
 
-	private boolean gameIsLost(Figure[] board) {
-		boolean gameIsLost = true;
-		for(int i=0; i<board.length; i++) {
-			if(board[i] != null && board[i].belongsTo(getPlayer()) && board[i].getKind() == FigureKind.FLAG) {
-				gameIsLost = false;
-			}
-		}
-		return gameIsLost;
-	}
-	
-	private boolean gameIsDefinitlyDrawn(Figure[] board) throws RemoteException {
-		int opponentFigures = 0;
-		
-		for(int i=0; i<board.length; i++) {
-			if(board[i] != null) {
-				if(board[i].belongsTo(getPlayer()) && board[i].getKind().isMovable()) {
-					return false;
-				}
-				
-				if(board[i].belongsTo(getOpponent())) {
-					opponentFigures++;
-				}
-			}
-		}
-		
-		return (opponentFigures==1);
-	}
-	
-	private boolean gameIsDefinitlyWon(Figure[] board) throws RemoteException {
-		for(int i=0; i<board.length; i++) {
-			if(board[i] != null && board[i].belongsTo(getOpponent())) {
-				return false;
-			}
-		}
-		
-		return true;
+	/**
+	 * Reset the AI state.
+	 * 
+	 * Resets flags, counters and lists that hold the state of the AI.
+	 */
+	private void resetAI() {
+		this.discoveredFigures = new ArrayList<Figure>();
+		this.discoveredPapers = 0;
+		this.discoveredRocks = 0;
+		this.discoveredScissors = 0;
+		this.discoveredTraps = 0;
+		this.lastAttackWasDrawn = false;
+		this.lastFigureKindChoices = new ArrayList<FigureKind>();
+		this.providedInitialChoice = null;
+		this.isInitialChoiceAlreadyProvided = false;
+		this.isChoiceAfterDrawnFightProvided = false;
+		this.movesCounter = 0;
 	}
 }
