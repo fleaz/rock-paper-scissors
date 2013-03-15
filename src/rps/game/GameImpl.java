@@ -204,7 +204,7 @@ public class GameImpl implements Game {
 	@Override
 	public void move(Player movingPlayer, int fromIndex, int toIndex) throws RemoteException {
 		if(movingPlayer.equals(this.lastMovedPlayer) 
-		&& this.movableFiguresLeftByPlayer(this.getOpponent(movingPlayer))) {
+		&& movableFiguresLeftByPlayer(this.board, getOpponent(movingPlayer))) {
 			throw new IllegalStateException("Can't move two times");
 		}
 		
@@ -224,7 +224,7 @@ public class GameImpl implements Game {
 			this.board[fromIndex] = null;
 			
 			// provide next move
-			if(movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+			if(movableFiguresLeftByPlayer(this.board, getOpponent(movingPlayer))) {
 				provideNextMove(getOpponent(movingPlayer));
 			} else {
 				provideNextMove(movingPlayer);
@@ -278,7 +278,7 @@ public class GameImpl implements Game {
 				this.board[toIndex] = this.board[fromIndex];
 				this.board[fromIndex] = null;
 				
-				if(this.movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+				if(this.movableFiguresLeftByPlayer(this.board, getOpponent(movingPlayer))) {
 					this.provideNextMove(getOpponent(movingPlayer));
 				} else {
 					this.provideNextMove(movingPlayer);
@@ -292,9 +292,9 @@ public class GameImpl implements Game {
 				this.board[fromIndex] = null;
 				this.board[toIndex] = null;
 				
-				if(this.movableFiguresLeftByPlayer(getOpponent(movingPlayer))) {
+				if(this.movableFiguresLeftByPlayer(this.board, getOpponent(movingPlayer))) {
 					this.provideNextMove(getOpponent(movingPlayer));
-				} else if(movableFiguresLeft()) {
+				} else if(movableFiguresLeft(this.board)) {
 					this.provideNextMove(movingPlayer);
 				} else {
 					this.informAboutGameDrawn();
@@ -426,7 +426,7 @@ public class GameImpl implements Game {
 		this.listener2.gameIsDrawn();
 	}
 	
-	private void provideNextMove(Player p) throws RemoteException {
+	private void provideNextMove(Player p) throws RemoteException {	
 		if(p.equals(this.player1)) {
 			this.listener1.provideNextMove();
 		} else {
@@ -440,14 +440,14 @@ public class GameImpl implements Game {
 	 * @return
 	 * @throws RemoteException 
 	 */
-	private boolean movableFiguresLeft() throws RemoteException {
-		return movableFiguresLeftByPlayer(null);
+	private boolean movableFiguresLeft(Figure[] board) throws RemoteException {
+		return movableFiguresLeftByPlayer(board, this.player1) || movableFiguresLeftByPlayer(board, this.player2);
 	}
 	
-	private boolean movableFiguresLeftByPlayer(Player p) throws RemoteException {
+	private boolean movableFiguresLeftByPlayer(Figure[] board, Player p) throws RemoteException {
 		for(int i=0; i<board.length; i++) {
 			if(board[i] != null) {
-				if(p == null || board[i].belongsTo(p))
+				if(board[i].belongsTo(p)) {
 					// blocked in the left-down corner
 					if(i == 0 
 					&& rightFieldIsOwnUnmovableFigure(i, p) 
@@ -479,6 +479,7 @@ public class GameImpl implements Game {
 					if(board[i].getKind().isMovable()) {
 						return true;
 					}
+				}
 			}
 		}
 		
@@ -501,7 +502,7 @@ public class GameImpl implements Game {
 			return false;
 		}
 		
-		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+		return (figure != null && figure.belongsTo(p) && !figure.getKind().isMovable());
 	}
 	
 	/**
@@ -520,7 +521,7 @@ public class GameImpl implements Game {
 			return false;
 		}
 		
-		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+		return (figure != null && figure.belongsTo(p) && !figure.getKind().isMovable());
 	}
 	
 	/**
@@ -539,7 +540,7 @@ public class GameImpl implements Game {
 			return false;
 		}
 		
-		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+		return (figure != null && figure.belongsTo(p) && !figure.getKind().isMovable());
 	}
 	
 	/**
@@ -558,6 +559,6 @@ public class GameImpl implements Game {
 			return false;
 		}
 		
-		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+		return (figure != null && figure.belongsTo(p) && !figure.getKind().isMovable());
 	}
 }
