@@ -608,15 +608,20 @@ public class TournamentAi implements GameListener {
 		}
 		
 		// are the opponent figures near to my flag?
-		result += 5 * totalFlagDistance / opponentFigureCount;
-		// did I lose a lot figures?
-		result += 5 * ownFigureCount;
-		// did the opponent lose a lot figures?
-		result -= 30 * opponentFigureCount;
+		result += totalFlagDistance / opponentFigureCount;
+		// figure diff
+		result += 4 * ownFigureCount-opponentFigureCount;
 		// am I near the opponents figures?
-		result -= 5 * totalDistanceToAllOpponentFigures / ownFigureCount / opponentFigureCount;
+		result -= totalDistanceToAllOpponentFigures / ownFigureCount;
 		// do I go forward?
-		result += 25 * rowSum / ownFigureCount;
+		result += 2 * rowSum / ownFigureCount;
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("opponent figures near flag ").append(totalFlagDistance / opponentFigureCount);
+		sb.append("\nfigure diff ").append(4 * (ownFigureCount-opponentFigureCount));
+		sb.append("\ndistance to opponent figures ").append(-(totalDistanceToAllOpponentFigures / ownFigureCount));
+		sb.append("\ngo forward ").append(2 * rowSum / ownFigureCount);
+		System.out.println(sb);
 		
 		return result;
 	}
@@ -1005,6 +1010,10 @@ public class TournamentAi implements GameListener {
 		Figure[] oldBoard = lastMove.getOldField();
 		int fromIndex = lastMove.getFrom();
 		int toIndex = lastMove.getTo();
+		
+		if(oldBoard[fromIndex] == null || oldBoard[toIndex] == null) {
+			return;
+		}
 		
 		if(this.lastAttackWasDrawn) {
 			if(oldBoard[fromIndex].belongsTo(getOpponent())) {
