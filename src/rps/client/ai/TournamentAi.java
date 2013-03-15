@@ -19,36 +19,40 @@ import rps.game.data.Player;
  */
 public class TournamentAi implements GameListener {
 
-	/*
+	/**
+	 * Max recursion depth.
+	 */
+	private int maxDepth = 6;
+
+	/**
 	 * Time limits for tournament mode.
-	 * 
-	 * 75% of max move duration are used as recursion anchor in the minimax
-	 * algorithm.
 	 */
 	private final int maxDurationForMoveInMilliSeconds;
 	//private final int maxDurationForAllMovesInMilliSeconds;
 	
-	/*
-	 * game related objects
+	/**
+	 * The game.
 	 */
 	private Game game;
+	
+	/**
+	 * The player.
+	 */
 	private Player player = new Player("Gruppe (#105)");
 	
-	/*
-	 * flags
+	/**
+	 * Flag whether the last attack was drawn.
 	 */
 	private boolean lastAttackWasDrawn;
 	
-	private int movesCounter; //Zahl der ausgeführten Züge der KI
-	
-	/*
-	 * discovered statistic
+	/**
+	 * Discovered statistic.
 	 */
 	private int discoveredRocks, discoveredPapers, discoveredScissors, discoveredTraps;
 	private ArrayList<Figure> discoveredFigures;
 	
-	/*
-	 * choice management
+	/**
+	 * Choices statistic.
 	 */
 	private ArrayList<FigureKind> lastFigureKindChoices;
 	private FigureKind providedInitialChoice;
@@ -75,12 +79,27 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * returns the AI player.
+	 * Returns the AI player.
 	 */
+	@Override
 	public Player getPlayer() {
 		return this.player;
 	}
+	
 
+	/**
+	 * Returns the opponent player.
+	 * 
+	 * @return
+	 * @throws RemoteException
+	 */
+	public Player getOpponent() throws RemoteException {
+		return this.game.getOpponent(getPlayer());
+	}
+
+	/**
+	 * Sends a chat message.
+	 */
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
 		if (!player.equals(sender)) {
@@ -89,7 +108,7 @@ public class TournamentAi implements GameListener {
 	}
 
 	/**
-	 * Provide an initial assignment.
+	 * Provides an initial assignment.
 	 * 
 	 * In a random column the flag is placed behind a trap. The other
 	 * figures are randomly placed on the remaining positions.
@@ -102,7 +121,7 @@ public class TournamentAi implements GameListener {
 		Random random = new Random();
 		int randomFlagPosition = 28 + random.nextInt(7);
 		
-		// Liste mit allen eigenen Figuren erstellen
+		// list of remaining figures
 		ArrayList<FigureKind> list = new ArrayList<FigureKind>();
 				
 		for(int i =0; i<4; i++) {
@@ -111,9 +130,10 @@ public class TournamentAi implements GameListener {
 			list.add(FigureKind.SCISSORS);
 		}
 		
-		Collections.shuffle(list); // Liste mischen -> zufällige Anordnung
+		// get random distribution
+		Collections.shuffle(list);
 		
-		// komplettes Feld
+		// create the assignment
 		FigureKind[] initialAssignment = new FigureKind[42];
 		
 		int i=0;
@@ -128,8 +148,11 @@ public class TournamentAi implements GameListener {
 			initialAssignment[k] = list.get(i+1); // 28 offset for top assignment
 			i += 2;
 		}
-		
+	
 		this.game.setInitialAssignment(this.player, initialAssignment);
+		
+		// needed if figureAttacked is called after gameIsWon in the previous game
+		this.lastMoveWasAnAttack = false;
 	}
 
 	/**
@@ -141,7 +164,7 @@ public class TournamentAi implements GameListener {
 	@Override
 	public void provideInitialChoice() throws RemoteException {
 		// initial choice was already given
-		// this means that the other player has choosen the same kind
+		// this means that the other player had chosen the same kind
 		if(this.isInitialChoiceAlreadyProvided) {
 			this.lastFigureKindChoices.add(this.providedInitialChoice);
 		}
@@ -152,6 +175,9 @@ public class TournamentAi implements GameListener {
 		this.game.setInitialChoice(getPlayer(), initialChoice);
 	}
 
+	/**
+	 * Called when the game was started.
+	 */
 	@Override
 	public void startGame() throws RemoteException {
 		// this is needed when gameIsWon is called before figureAttacked in GameImpl
@@ -173,16 +199,19 @@ public class TournamentAi implements GameListener {
 			this.isInitialChoiceAlreadyProvided = false;
 		}
 		
+		// update choices statistic after a drawn fight
 		if(this.isChoiceAfterDrawnFightProvided) {
 			updateProvidedChoicesStatisticAfterDrawnFight();
 			this.isChoiceAfterDrawnFightProvided = false;
 		}
 		
+		// update discovered statistic
 		if(this.lastMoveWasAnAttack || this.lastAttackWasDrawn) {
 			updateDiscoveredStatistic(this.game.getLastMove());
 			this.lastMoveWasAnAttack = false;
 		}
 
+		// provide the move
 		Move move;
 		try {
 			move = minimax(this.game.getField(), moveCalculationStartedAt);
@@ -190,21 +219,34 @@ public class TournamentAi implements GameListener {
 			// get a move via minimax algorithm
 			// if the recursion doesnt work correctly and the stack overflows,
 			// provide a random move to continue the game
-			move = BasicAi.getPossibleMoves(this.game.getField(), this.player)[0];
+			move = getPossibleMoves(this.game.getField(), getPlayer(), getOpponent())[0];
 		}
+		
 		this.game.move(this.player, move.getFrom(), move.getTo());
 		
-		this.movesCounter++;
+		// time diff
+		long timeDiffNanos = System.nanoTime()-moveCalculationStartedAt;
+		if(timeDiffNanos >= 850000L * this.maxDurationForMoveInMilliSeconds) {
+			this.maxDepth--;
+		} else {
+			this.maxDepth++;
+		}
+		
+		// output the time it took
+		StringBuffer sb = new StringBuffer();
+		sb.append("The move took ").append((System.nanoTime()-moveCalculationStartedAt)/1000000).append("ms");
+		sb.append(" with depth ").append(this.maxDepth);
+		System.out.println(sb);
 	}
 
+	/**
+	 * Called when a figure was moved.
+	 */
 	@Override
 	public void figureMoved() throws RemoteException {}
 	
 	/**
-	 * Called when a figure is attacked.
-	 * 
-	 * Then the discovered statistic is updated with the figure involved
-	 * in the attack.
+	 * Called when a figure was attacked.
 	 */
 
 	@Override
@@ -214,7 +256,7 @@ public class TournamentAi implements GameListener {
 
 
 	/**
-	 * Called when a choice must be provided after a drawn fight.
+	 * Provides a choice after a drawn fight.
 	 * 
 	 * The choice is determined with the last provided choices of the
 	 * opponent. Although a flag is set so that the new created opponent
@@ -234,13 +276,12 @@ public class TournamentAi implements GameListener {
 		
 		this.game.setUpdatedKindAfterDraw(player, choice);
 		
+		// important for discovered statistic
 		this.lastAttackWasDrawn = true;
 	}
 	
 	/**
-	 * Game is lost.
-	 * 
-	 * The AI is reseted.
+	 * Called when the game is lost.
 	 */
 
 	@Override
@@ -249,9 +290,7 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * Game is won.
-	 * 
-	 * The AI is reseted.
+	 * Called when the game is won.
 	 */
 
 	@Override
@@ -260,9 +299,7 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * Game is drawn
-	 * 
-	 * The AI is reseted.
+	 * Called when the game is drawn.
 	 */
 	@Override
 	public void gameIsDrawn() throws RemoteException {
@@ -270,7 +307,7 @@ public class TournamentAi implements GameListener {
 	}
 	
 	/**
-	 * Print AI Object as String.
+	 * Returns the nick of the player.
 	 */
 
 	@Override
@@ -280,28 +317,149 @@ public class TournamentAi implements GameListener {
 	
 
 	/**
-	 * minimax algorithm
+	 * Returns the possible moves of player.
 	 * 
-	 * Is called by provideNextMove to determine a good move for the ai.
+	 * A possible move is a move with an own figure to another field on
+	 * the board with distance one that is not blocked by another own figure.
 	 * 
 	 * @param board
+	 * @param player
 	 * @return
 	 * @throws RemoteException
 	 */
-	public Move minimax(Figure[] board, long startTime) throws RemoteException {
-		Figure[] newBoard;
+	public static Move[] getPossibleMoves(Figure[] board, Player player, Player opponent) throws RemoteException {
+		Move[] possibleMoves = new Move[48];  // 12 own movable figures with 4 directions
+		int counter = 0;
+		
+		for(int i=0; i<board.length; i++) {		
+			if(board[i] != null && board[i].belongsTo(player) && board[i].getKind().isMovable()) { 	
+				try{
+					if(getLeftFieldByIndex(board, i).belongsTo(opponent)) {
+						possibleMoves[counter] = new Move(i, i-1, board);
+						counter++;
+					}
+				} catch(NullPointerException e) {
+					possibleMoves[counter] = new Move(i, i-1, board);
+					counter++;
+				} catch (IndexOutOfBoundsException e){}	
+				
+				try{
+					if(getRightFieldByIndex(board, i).belongsTo(opponent)) {
+						possibleMoves[counter] = new Move(i, i+1, board);
+						counter++;
+					}
+				} catch(NullPointerException e) {
+					possibleMoves[counter] = new Move(i, i+1, board);
+					counter++;
+				} catch (IndexOutOfBoundsException e){}
+				
+				try{
+					if(getUpFieldByIndex(board, i).belongsTo(opponent)) {
+						possibleMoves[counter] = new Move(i, i-7, board);
+						counter++;
+					}
+				} catch(NullPointerException e) {
+					possibleMoves[counter] = new Move(i, i-7, board);
+					counter++;
+				} catch (IndexOutOfBoundsException e){}
+				
+				try{
+					if(getDownFieldByIndex(board, i).belongsTo(opponent)) {
+						possibleMoves[counter] = new Move(i, i+7, board);
+						counter++;
+					}
+				} catch(NullPointerException e) {
+					possibleMoves[counter] = new Move(i, i+7, board);
+					counter++;
+				} catch (IndexOutOfBoundsException e){}
+			}
+		}
+		
+		return possibleMoves;
+	}
+	
+	/**
+	 * Returns the field left of i.
+	 * 
+	 * @param i
+	 * @return
+	 * @throws IndexOutOfBoundsException
+	 * @throws RemoteException
+	 */
+	private static Figure getLeftFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
+		if(i%7==0) {
+			throw new IndexOutOfBoundsException();
+		}
+		return board[i-1];
+	}
+	
+	/**
+	 * Returns the field right of i.
+	 * 
+	 * @param i
+	 * @return
+	 * @throws IndexOutOfBoundsException
+	 * @throws RemoteException
+	 */
+	private static Figure getRightFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
+		if((i+1)%7==0) {
+			throw new IndexOutOfBoundsException();
+		}
+		return board[i+1];
+	}
+	
+	/**
+	 * Returns the field above i.
+	 * 
+	 * @param i
+	 * @return
+	 * @throws IndexOutOfBoundsException
+	 * @throws RemoteException
+	 */
+	private static Figure getUpFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
+		if(i<7) {
+			throw new IndexOutOfBoundsException();
+		}
+		return board[i-7];
+	}
+	
+	/**
+	 * Returns the field under i.
+	 * 
+	 * @param i
+	 * @return
+	 * @throws IndexOutOfBoundsException
+	 * @throws RemoteException
+	 */
+	private static Figure getDownFieldByIndex(Figure[] board, int i) throws IndexOutOfBoundsException, RemoteException{
+		if(i>=35) {
+			throw new IndexOutOfBoundsException();
+		}
+		return board[i+7];
+	}	
+	
+	/**
+	 * Minimax algorithm.
+	 * 
+	 * Is called by provideNextMove to determine a good move for the AI.
+	 * 
+	 * @param board
+	 * @param startTime
+	 * @return
+	 * @throws RemoteException
+	 */
+	private Move minimax(Figure[] board, long startTime) throws RemoteException {
+		Figure[] newBoard = replaceHiddenFiguresWithPossibleRealFigures(board);;
+		
 		int score = Integer.MIN_VALUE;
 		Move result = null;
-		
-		board = replaceHiddenFiguresWithPossibleRealFigures(board);
-		
-		for(Move move: BasicAi.getPossibleMoves(board, this.player)) {
+
+		for(Move move: getPossibleMoves(newBoard, getPlayer(), getOpponent())) {
 			if(move == null) {
 				continue;
 			} 
 			
-			newBoard = performMove(board, move);
-			int minScore = minValue(newBoard, startTime, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			int minScore = minValue(performMove(newBoard, move), startTime, 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
 			if(minScore >= score) {
 				result = move;
@@ -312,88 +470,73 @@ public class TournamentAi implements GameListener {
 		return result;
 	}
 	
-	
 	/**
 	 * max-Function of the minimax algorithm.
 	 * 
 	 * @param board
 	 * @param startTime
+	 * @param depth
 	 * @param alpha
 	 * @param beta
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int maxValue(Figure[] board, long startTime, int alpha, int beta) throws RemoteException {
-		// end-state reached?
-		if(terminalTest(board)) {
-			return utility(board);
-		}
-		// stop recursion
-		else if(System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
+	private int maxValue(Figure[] board, long startTime, int depth, int alpha, int beta) throws RemoteException {
+		if(depth == this.maxDepth || terminalTest(board) || System.nanoTime()-startTime >= 850000L * this.maxDurationForMoveInMilliSeconds) {
 			return utility(board);
 		}
 		
 		int v = Integer.MIN_VALUE;
-		
-		for(Move move: BasicAi.getPossibleMoves(board, this.player)) {
+
+		for(Move move: getPossibleMoves(board, getPlayer(), getOpponent())) {
 			// skip empty moves (no valid action)
 			if(move == null) {
 				return v;
 			}
 			
-			// update state
-			Figure[] newBoard = performMove(board, move);
-			
 			// evaluate
-			v = Math.max(v, minValue(newBoard, startTime, alpha, beta));
+			v = Math.max(v, minValue(performMove(board, move), startTime, depth+1, alpha, beta));
 			if(v >= beta) {
 				return v;
-			} else {
-				alpha = Math.max(alpha, v);
 			}
+				
+			alpha = Math.max(alpha, v);
 		}
 		
 		return v;
 	}
 	
 	/**
-	 * min-Function of the minimax algorithm
+	 * min-Function of the minimax algorithm.
 	 * 
 	 * @param board
 	 * @param startTime
+	 * @param depth
 	 * @param alpha
 	 * @param beta
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int minValue(Figure[] board, long startTime, int alpha, int beta) throws RemoteException {
-		// end-state reached?
-		if(terminalTest(board)) {
-			return utility(board);
-		}
-		// stop recursion
-		else if(System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
+	private int minValue(Figure[] board, long startTime, int depth, int alpha, int beta) throws RemoteException {
+		if(depth == this.maxDepth || terminalTest(board) || System.nanoTime()-startTime >= 850000L * this.maxDurationForMoveInMilliSeconds) {
 			return utility(board);
 		}
 		
 		int v = Integer.MAX_VALUE;
 
-		for(Move move: BasicAi.getPossibleMoves(board, getOpponent())) {
+		for(Move move: getPossibleMoves(board, getOpponent(), getPlayer())) {
 			// skip empty moves (no valid action)
 			if(move == null) {
 				return v;
 			}
 			
-			// update state
-			Figure[] newBoard = performMove(board, move);
-			
 			// evaluate
-			v = Math.min(v, maxValue(newBoard, startTime, alpha, beta));
+			v = Math.min(v, maxValue(performMove(board, move), startTime, depth+1, alpha, beta));
 			if(v <= alpha) {
 				return v;
-			} else {
-				beta = Math.min(beta, v);
 			}
+				
+			beta = Math.min(beta, v);
 		}
 		
 		return v;
@@ -407,10 +550,9 @@ public class TournamentAi implements GameListener {
 	 * @return
 	 * @throws RemoteException 
 	 */
-	public boolean terminalTest(Figure[] board) throws RemoteException {
+	private boolean terminalTest(Figure[] board) throws RemoteException {
 		return gameIsDrawn(board) || gameIsDefinitlyWon(board) || gameIsLost(board);
 	}
-	
 	
 	/**
 	 * Determines a score for a given state.
@@ -422,59 +564,126 @@ public class TournamentAi implements GameListener {
 	 * @return
 	 * @throws RemoteException 
 	 */
-	public int utility(Figure[] board) throws RemoteException {
-		int result = 0;
-
+	private int utility(Figure[] board) throws RemoteException {
 		// return a static value if the game is over
 		if(gameIsLost(board)) {
-			result = Integer.MIN_VALUE;
+			return Integer.MIN_VALUE;
 		} else if(gameIsDefinitlyWon(board)) {
-			result = Integer.MAX_VALUE;
+			return Integer.MAX_VALUE;
 		} else if(gameIsDrawn(board)) {
-			result = 0;
-		}
-		// use a heuristic to score an unfinished game
-		else {
-			
-			for(int i=0; i<board.length; i++) {
-				if(board[i] != null) {
-					if(board[i].belongsTo(getPlayer())) {
-						
-						if(movesCounter < 7) {//andere Bewertung für die ersten 7 züge -> Aufbau
-							//je weiter vorne eine figur steht, desto höher ihre bewertung
-							if(i<7) { // letzte reihe
-								result += 80;
-							}
-							else if(i<14) { // vorletzte Reihe
-								result += 70;
-							}
-							else if(i<21) { // 4. Reihe
-								result += 60;
-							}
-							else if(i<28) { // 3. Reihe
-								result -= Math.abs(i - 24); //entfernung vom mittelfeld wird abgezogen -> Ai startet das Vorziehen über die Mitte
-								result += 50;
-							}
-							else if(i<35) { //2. Reihe
-								result += 30;
-							}
-						}
-						else { //im weiteren spielverlauf (ab 8. Zug)
-							//jede reihe gleichwertig, hauptsache nach vorne
-							for(int a=35; a>i; a-=7) {
-								result++;
-							}							
-						}
-						
-						result += 10000; // +10000 für jede eigene figur auf dem Feld
-					} else {
-						result -= 10000; // -10000 für jede gegnerische figur auf dem Feld
-					}
-				}
-			}			
+			return 0;
 		}
 		
+		// use a heuristic to score an unfinished game	
+		int result = 0;
+		
+		// get flag position
+		int flagPosition = 0;
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null && board[i].belongsTo(getPlayer()) && board[i].getKind() == FigureKind.FLAG) {
+				flagPosition = i;
+				break;
+			}
+		}
+		
+		//  do same statistics
+		int totalFlagDistance = 0, totalDistanceToAllOpponentFigures = 0, rowSum = 0;
+		int ownFigureCount = 0, opponentFigureCount = 0;
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null) {
+				if(board[i].belongsTo(getPlayer())) {
+					ownFigureCount++;
+					rowSum += i / 7;
+				} else {
+					totalFlagDistance += distance(flagPosition, i);
+					opponentFigureCount++;
+					
+					for(int j=0; j<board.length; j++) {
+						if(board[j] != null && board[j].belongsTo(getOpponent())) {
+							totalDistanceToAllOpponentFigures += distance(j, i);
+						}
+					}
+				}
+			}
+		}
+		
+		// are the opponent figures near to my flag?
+		result += 5 * totalFlagDistance / opponentFigureCount;
+		// did I lose a lot figures?
+		result += 5 * ownFigureCount;
+		// did the opponent lose a lot figures?
+		result -= 30 * opponentFigureCount;
+		// am I near the opponents figures?
+		result -= 5 * totalDistanceToAllOpponentFigures / ownFigureCount / opponentFigureCount;
+		// do I go forward?
+		result += 25 * rowSum / ownFigureCount;
+		
 		return result;
+	}
+	
+	/**
+	 * Returns the amount of moves to come from a to b.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private int distance(int a, int b) {
+		int columnOfA = a % 7;
+		int columnOfB = b % 7;
+		
+		int columnDistance = Math.abs(columnOfA-columnOfB);
+		int rowDistance = Math.abs((a-columnOfA)-(b-columnOfB)) / 7;
+		
+		return columnDistance + rowDistance;
+	}
+
+	/**
+	 * Replace hidden figures on a board with possible figures for the player.
+	 * 
+	 * Uses the discovered figures statistic to replace opponent figures of
+	 * hidden kind with figures with a real figure kind. The right amount of
+	 * each kind is secured through the discovered figures statistic.
+	 * 
+	 * @param board
+	 * @return
+	 * @throws RemoteException
+	 */
+	private Figure[] replaceHiddenFiguresWithPossibleRealFigures(Figure[] board)
+			throws RemoteException {
+		// clone old board
+		Figure[] newBoard = board.clone();
+		
+		// create array with remaining figure kinds for hidden figures
+		ArrayList<FigureKind> hiddenFigures = new ArrayList<FigureKind>();
+		for(int i=this.discoveredRocks; i<4; i++) {
+			hiddenFigures.add(FigureKind.ROCK);
+		}
+		for(int i=this.discoveredPapers; i<4; i++) {
+			hiddenFigures.add(FigureKind.PAPER);
+		}
+		for(int i=this.discoveredScissors; i<4; i++) {
+			hiddenFigures.add(FigureKind.SCISSORS);
+		}
+		if(this.discoveredTraps == 0) {
+			hiddenFigures.add(FigureKind.TRAP);
+		}
+		hiddenFigures.add(FigureKind.FLAG);
+
+		// shuffle array to get a random allocation
+		Collections.shuffle(hiddenFigures);
+		
+		// replace hidden figures with figure kinds from the shuffled array
+		int j=0;
+		for(int i=0; i<newBoard.length; i++) {
+			if(newBoard[i] != null && newBoard[i].getKind() == FigureKind.HIDDEN) {
+				newBoard[i] = new Figure(hiddenFigures.get(j), getOpponent());
+				j++;
+			}
+		}
+		
+		// return board without hidden figures
+		return newBoard;
 	}
 	
 	/**
@@ -538,6 +747,7 @@ public class TournamentAi implements GameListener {
 	
 	/**
 	 * Returns an opponent choice with preference for previous choices.
+	 * 
 	 * @return
 	 */
 	private FigureKind getRandomChoiceWithLastProvidedPrefered() {
@@ -564,7 +774,7 @@ public class TournamentAi implements GameListener {
 	}
 
 	/**
-	 * Returns a choice for the ai.
+	 * Returns a choice for the AI.
 	 * 
 	 * The method returns the figure kind that would have one the most times
 	 * in the history.
@@ -639,64 +849,6 @@ public class TournamentAi implements GameListener {
 		}
 		
 		return counter;
-	}
-
-	/**
-	 * Returns the opponent player.
-	 * 
-	 * @return
-	 * @throws RemoteException
-	 */
-	private Player getOpponent() throws RemoteException {
-		return this.game.getOpponent(this.player);
-	}
-	
-	/**
-	 * Replace hidden figures on a board with possible figures for the player.
-	 * 
-	 * Uses the discovered figures statistic to replace opponent figures of
-	 * hidden kind with figures with a real figure kind. The right amount of
-	 * each kind is secured through the discovered figures statistic.
-	 * 
-	 * @param board
-	 * @return
-	 * @throws RemoteException
-	 */
-	private Figure[] replaceHiddenFiguresWithPossibleRealFigures(Figure[] board)
-			throws RemoteException {
-		// clone old board
-		Figure[] newBoard = board.clone();
-		
-		// create array with remaining figure kinds for hidden figures
-		ArrayList<FigureKind> hiddenFigures = new ArrayList<FigureKind>();
-		for(int i=this.discoveredRocks; i<4; i++) {
-			hiddenFigures.add(FigureKind.ROCK);
-		}
-		for(int i=this.discoveredPapers; i<4; i++) {
-			hiddenFigures.add(FigureKind.PAPER);
-		}
-		for(int i=this.discoveredScissors; i<4; i++) {
-			hiddenFigures.add(FigureKind.SCISSORS);
-		}
-		if(this.discoveredTraps == 0) {
-			hiddenFigures.add(FigureKind.TRAP);
-		}
-		hiddenFigures.add(FigureKind.FLAG);
-
-		// shuffle array to get a random allocation
-		Collections.shuffle(hiddenFigures);
-		
-		// replace hidden figures with figure kinds from the shuffled array
-		int j=0;
-		for(int i=0; i<newBoard.length; i++) {
-			if(newBoard[i] != null && newBoard[i].getKind() == FigureKind.HIDDEN) {
-				newBoard[i] = new Figure(hiddenFigures.get(j), getOpponent());
-				j++;
-			}
-		}
-		
-		// return board without hidden figures
-		return newBoard;
 	}
 	
 	/**
@@ -813,7 +965,11 @@ public class TournamentAi implements GameListener {
 		}
 	}
 	
-
+	/**
+	 * Updates the choices statistic with the choice provided after a drawn fight.
+	 * 
+	 * @throws RemoteException
+	 */
 	private void updateProvidedChoicesStatisticAfterDrawnFight() throws RemoteException {
 		Move lastMove = this.game.getLastMove();
 		int fromIndex = lastMove.getFrom();
@@ -915,6 +1071,5 @@ public class TournamentAi implements GameListener {
 		this.providedChoiceAfterDrawnFight = null;
 		this.isInitialChoiceAlreadyProvided = false;
 		this.isChoiceAfterDrawnFightProvided = false;
-		this.movesCounter = 0;
 	}
 }
