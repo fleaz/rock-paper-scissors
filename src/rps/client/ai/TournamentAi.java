@@ -231,12 +231,6 @@ public class TournamentAi implements GameListener {
 		} else {
 			this.maxDepth++;
 		}
-		
-		// output the time it took
-		StringBuffer sb = new StringBuffer();
-		sb.append("The move took ").append((System.nanoTime()-moveCalculationStartedAt)/1000000).append("ms");
-		sb.append(" with depth ").append(this.maxDepth);
-		System.out.println(sb);
 	}
 
 	/**
@@ -456,12 +450,12 @@ public class TournamentAi implements GameListener {
 
 		for(Move move: getPossibleMoves(newBoard, getPlayer(), getOpponent())) {
 			if(move == null) {
-				continue;
+				return result;
 			} 
 			
 			int minScore = minValue(performMove(newBoard, move), startTime, 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
-			if(minScore >= score) {
+			if(minScore > score) {
 				result = move;
 				score = minScore;
 			}
@@ -616,12 +610,10 @@ public class TournamentAi implements GameListener {
 		// do I go forward?
 		result += 2 * rowSum / ownFigureCount;
 		
-		StringBuffer sb = new StringBuffer();
-		sb.append("opponent figures near flag ").append(totalFlagDistance / opponentFigureCount);
-		sb.append("\nfigure diff ").append(4 * (ownFigureCount-opponentFigureCount));
-		sb.append("\ndistance to opponent figures ").append(-(totalDistanceToAllOpponentFigures / ownFigureCount));
-		sb.append("\ngo forward ").append(2 * rowSum / ownFigureCount);
-		System.out.println(sb);
+		// take the flag
+		if(opponentFigureCount <= 2) {
+			result = totalDistanceToAllOpponentFigures;
+		}
 		
 		return result;
 	}
