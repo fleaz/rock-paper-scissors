@@ -356,10 +356,13 @@ public class GameImpl implements Game {
 			} else if(result == AttackResult.DRAW) {
 				this.listener1.provideChoiceAfterFightIsDrawn();
 				this.listener2.provideChoiceAfterFightIsDrawn();
+				
+				this.board[indexFrom] = offenderFigure;
+				this.board[indexTo] = defenderFigure;
 			}
 			
 			// update last move
-			Figure[] oldBoard = this.getLastMove().getOldField();
+			Figure[] oldBoard = this.board.clone();
 			oldBoard[indexFrom] = offenderFigure;
 			oldBoard[indexTo] = defenderFigure;
 			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
