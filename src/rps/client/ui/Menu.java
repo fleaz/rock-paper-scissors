@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -23,6 +24,10 @@ public class Menu {
 	
 	private final JFrame aboutFrame = new JFrame("About");
 	private final JFrame highFrame = new JFrame("Highscore");
+	private final JButton closeHighscore = new JButton("Highscore schliessen");
+	private final JLabel hsNick = new JLabel("Spieler:");
+	private final JLabel hsAi = new JLabel("Besiegte KI:");
+	private final JLabel hsScore = new JLabel("Punktzahl:");
 	
 	private final JMenuBar menuBar = new JMenuBar();
 	
@@ -71,18 +76,32 @@ public class Menu {
 		frame.setJMenuBar(menuBar);
 
 		for(int i=0;i<10;i++){
+			
+			
 			nicks[i] = new JLabel("-");
 			ai[i] = new JLabel("-");
 			score[i] = new JLabel("-");
 			
-			nicks[i].setBounds(20, i*30+30, 150, 20);
-			ai[i].setBounds(190, i*30+30, 100, 20);
-			score[i].setBounds(350, i*30+30, 100, 20);
+			nicks[i].setBounds(20, (i+1)*30+30, 150, 20);
+			ai[i].setBounds(190, (i+1)*30+30, 100, 20);
+			score[i].setBounds(350, (i+1)*30+30, 100, 20);
 					
 			highFrame.add(nicks[i]);
 			highFrame.add(ai[i]);
 			highFrame.add(score[i]);			
 		}
+
+		hsNick.setBounds(20, 20, 150, 20);
+		hsAi.setBounds(190, 20, 100, 20);
+		hsScore.setBounds(350, 20, 100, 20);
+
+		highFrame.add(hsNick);
+		highFrame.add(hsAi);
+		highFrame.add(hsScore);
+		
+		closeHighscore.setBounds(120, 390, 210, 30);
+		highFrame.add(closeHighscore);
+		
 		highFrame.add(new JLabel());
 		highFrame.setLocationRelativeTo(null);
 		highFrame.setBounds(500, 300, 450, 480);
@@ -144,6 +163,13 @@ public class Menu {
 					e1.printStackTrace();
 				}
 				highFrame.setVisible(true);
+			}
+		});
+		closeHighscore.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				highFrame.setVisible(false);
+				
 			}
 		});
 		infoAbout.addActionListener(new ActionListener() {
