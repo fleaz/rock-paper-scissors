@@ -491,7 +491,7 @@ public class TournamentAi implements GameListener {
 		for(Move move: getPossibleMoves(board, getPlayer(), getOpponent())) {
 			// skip empty moves (no valid action)
 			if(move == null) {
-				continue;
+				return v;
 			}
 			
 			// evaluate
@@ -527,7 +527,7 @@ public class TournamentAi implements GameListener {
 		for(Move move: getPossibleMoves(board, getOpponent(), getPlayer())) {
 			// skip empty moves (no valid action)
 			if(move == null) {
-				continue;
+				return v;
 			}
 			
 			// evaluate
@@ -898,8 +898,8 @@ public class TournamentAi implements GameListener {
 	 * 
 	 * The method checks whether the AI has no movable figures left and the
 	 * opponent has only one figure left (the flag) or two figures left and
-	 * the flag was not discovered yet (then the opponent has only his trap
-	 * and flag remaining.
+	 * the trap was not discovered yet (then the opponent has only his trap
+	 * and flag remaining).
 	 * 
 	 * @param board
 	 * @return
