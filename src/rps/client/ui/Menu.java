@@ -26,10 +26,10 @@ public class Menu {
 	
 	private final JMenuBar menuBar = new JMenuBar();
 	
-	private final JMenu menuGame = new JMenu("Game");
-	private final JMenuItem menuGameNew = new JMenuItem("New");
-	private final JMenuItem menuGameSurrender = new JMenuItem("Surrender");
-	private final JMenuItem menuGameExit = new JMenuItem("Exit");
+	private final JMenu menuGame = new JMenu("Spiel");
+	private final JMenuItem menuGameNew = new JMenuItem("Neues Spiel");
+	private final JMenuItem menuGameSurrender = new JMenuItem("Aufgeben");
+	private final JMenuItem menuGameExit = new JMenuItem("Beenden");
 	
 	private final JMenu menuTheme = new JMenu("Theme");
 	private final JMenuItem themeDefault = new JMenuItem("Default");
@@ -150,13 +150,13 @@ public class Menu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(aboutFrame, 
-							"Rock Paper Scissors Game written in Java\n\n"+
-							"Developer Team:\n"+
+							"\"Rock Paper Scissors\" geschrieben in Java\n\n"+
+							"Entwicklerteam:\n"+
 							"Felix Breidenstein\n"+
 							"Sebastian Bechtel\n"+
 							"Wilhelm Werner\n"+
 							"Robert Respondek\n\n"+
-							"Sourcecode can be found at:\n"+
+							"Quellcode kann hier gefunden werden:\n"+
 							"https://github.com/f-breidenstein/rock-paper-scissors/"
 							);
 			}

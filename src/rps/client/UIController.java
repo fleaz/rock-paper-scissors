@@ -33,7 +33,7 @@ public class UIController {
 	}
 
 	public void handleNewGame() {
-		gameController.resetForNewGame();
+		//gameController.resetForNewGame();
 		menu.reset();
 		startupPane.show();
 		waitingPane.hide();

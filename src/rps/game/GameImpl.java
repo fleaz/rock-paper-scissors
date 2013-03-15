@@ -8,7 +8,6 @@ import rps.game.data.Figure;
 import rps.game.data.FigureKind;
 import rps.game.data.Move;
 import rps.game.data.Player;
-import rps.highscore.Highscore;
 
 /**
  * The {@code GameImpl} is an implementation for the {@code Game} interface. It

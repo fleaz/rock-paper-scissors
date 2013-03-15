@@ -623,8 +623,6 @@ public class GamePane {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					int position = Integer.parseInt(ae.getActionCommand());
-					// printLog("Position: " + (position % 7) + " / " +
-					// (position / 7) + " | Array: " + position);
 
 					switch (gamePhase) {
 					case "initFlag":

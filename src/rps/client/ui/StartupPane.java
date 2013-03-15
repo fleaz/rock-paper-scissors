@@ -27,16 +27,16 @@ public class StartupPane {
 
 	private final JPanel connectionPane = new JPanel();
 
-	private final JLabel playerLabel = new JLabel("Player name:");
-	private final JTextField playerName = new JTextField("Player X");
+	private final JLabel playerLabel = new JLabel("Spieler:");
+	private final JTextField playerName = new JTextField("Admiral Ackbar");
 
 	private final JLabel hostLabel = new JLabel("Host:");
 	private final JComboBox<String> hostIP = new JComboBox<String>();
 
-	private final JLabel joinLabel = new JLabel("Join:");
+	private final JLabel joinLabel = new JLabel("Beitreten:");
 	private final JTextField joinAddr = new JTextField();
 
-	private final JLabel aiLabel = new JLabel("AIs:");
+	private final JLabel aiLabel = new JLabel("KI:");
 	private final JComboBox<GameListener> comboAi = new JComboBox<GameListener>();
 
 	private final JButton startBtn = new JButton("Start");
