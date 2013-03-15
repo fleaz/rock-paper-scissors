@@ -833,15 +833,15 @@ public class TournamentAi implements GameListener {
 
 	private void updateProvidedChoicesStatisticAfterDrawnFight() throws RemoteException {
 		Move lastMove = this.game.getLastMove();
-		int indexFrom = lastMove.getFrom();
-		int indexTo = lastMove.getTo();
+		int fromIndex = lastMove.getFrom();
+		int toIndex = lastMove.getTo();
 		Figure[] oldBoard = lastMove.getOldField();
 		
 		FigureKind opponentChoice;
-		if(oldBoard[indexFrom].belongsTo(getOpponent())) {
-			opponentChoice = oldBoard[indexFrom].getKind();
+		if(oldBoard[fromIndex].belongsTo(getOpponent())) {
+			opponentChoice = oldBoard[fromIndex].getKind();
 		} else {
-			opponentChoice = oldBoard[indexTo].getKind();
+			opponentChoice = oldBoard[toIndex].getKind();
 		}
 		
 		this.lastFigureKindChoices.add(opponentChoice);
@@ -864,15 +864,15 @@ public class TournamentAi implements GameListener {
 	private void updateDiscoveredStatistic(Move lastMove) throws RemoteException {
 		// get information about attack from last move
 		Figure[] oldBoard = lastMove.getOldField();
-		int indexFrom = lastMove.getFrom();
-		int indexTo = lastMove.getTo();
+		int fromIndex = lastMove.getFrom();
+		int toIndex = lastMove.getTo();
 		
 		if(this.lastAttackWasDrawn) {
-			if(oldBoard[indexFrom].belongsTo(getOpponent())) {
-				this.discoveredFigures.add(oldBoard[indexFrom]);
+			if(oldBoard[fromIndex].belongsTo(getOpponent())) {
+				this.discoveredFigures.add(oldBoard[fromIndex]);
 			}
 			else {
-				this.discoveredFigures.add(oldBoard[indexTo]);
+				this.discoveredFigures.add(oldBoard[toIndex]);
 			}
 			
 			this.lastAttackWasDrawn = false;
@@ -883,10 +883,10 @@ public class TournamentAi implements GameListener {
 		Figure discoveredFigure;
 		FigureKind discoveredFigureKind;
 		
-		if(oldBoard[indexFrom].belongsTo(this.player)) {
-			discoveredFigure = oldBoard[indexTo];
+		if(oldBoard[fromIndex].belongsTo(this.player)) {
+			discoveredFigure = oldBoard[toIndex];
 		} else {
-			discoveredFigure = oldBoard[indexFrom];
+			discoveredFigure = oldBoard[fromIndex];
 		}
 		discoveredFigureKind = discoveredFigure.getKind();
 		

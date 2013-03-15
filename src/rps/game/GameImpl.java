@@ -249,15 +249,15 @@ public class GameImpl implements Game {
 			
 			// discover lastMove figures
 			Figure[] oldBoard = this.lastMove.getOldField();
-			int indexFrom = this.lastMove.getFrom();
-			int indexTo = this.lastMove.getTo();
+			int lastFromIndex = this.lastMove.getFrom();
+			int lastToIndex = this.lastMove.getTo();
 			
-			if(oldBoard[indexFrom] != null) {
-				oldBoard[indexFrom].setDiscovered();
+			if(oldBoard[lastFromIndex] != null) {
+				oldBoard[lastFromIndex].setDiscovered();
 			}
 			
-			if(oldBoard[indexTo] != null) {
-				oldBoard[indexTo].setDiscovered();
+			if(oldBoard[lastToIndex] != null) {
+				oldBoard[lastToIndex].setDiscovered();
 			}
 						
 			// evaluate result
@@ -318,15 +318,15 @@ public class GameImpl implements Game {
 		
 		// compare choices if available
 		if(this.choiceOfPlayer1 != null && this.choiceOfPlayer2 != null) {
-			int indexFrom = this.getLastMove().getFrom();
-			int indexTo = this.getLastMove().getTo();
+			int fromIndex = this.getLastMove().getFrom();
+			int toIndex = this.getLastMove().getTo();
 			
 			// get result
 			AttackResult result;
 			Figure offenderFigure, defenderFigure;
 			Player defenderPlayer;
 			
-			if(this.board[indexFrom].belongsTo(this.player1)) {
+			if(this.board[fromIndex].belongsTo(this.player1)) {
 				result = this.choiceOfPlayer1.attack(this.choiceOfPlayer2);
 				offenderFigure = new Figure(this.choiceOfPlayer1, this.player1);
 				offenderFigure.setDiscovered();
@@ -344,28 +344,28 @@ public class GameImpl implements Game {
 			
 			// evaluate result
 			if(result == AttackResult.WIN) { // do move and kill target
-				this.board[indexTo] = offenderFigure;
-				this.board[indexFrom] = null;
+				this.board[toIndex] = offenderFigure;
+				this.board[fromIndex] = null;
 				
 				this.provideNextMove(defenderPlayer);
 			} else if(result == AttackResult.LOOSE) { // kill source
-				this.board[indexTo] = defenderFigure;
-				this.board[indexFrom] = null;
+				this.board[toIndex] = defenderFigure;
+				this.board[fromIndex] = null;
 				
 				this.provideNextMove(defenderPlayer);
 			} else if(result == AttackResult.DRAW) {
 				this.listener1.provideChoiceAfterFightIsDrawn();
 				this.listener2.provideChoiceAfterFightIsDrawn();
 				
-				this.board[indexFrom] = offenderFigure;
-				this.board[indexTo] = defenderFigure;
+				this.board[fromIndex] = offenderFigure;
+				this.board[toIndex] = defenderFigure;
 			}
 			
 			// update last move
 			Figure[] oldBoard = this.board.clone();
-			oldBoard[indexFrom] = offenderFigure;
-			oldBoard[indexTo] = defenderFigure;
-			this.lastMove = new Move(indexFrom, indexTo, oldBoard);
+			oldBoard[fromIndex] = offenderFigure;
+			oldBoard[toIndex] = defenderFigure;
+			this.lastMove = new Move(fromIndex, toIndex, oldBoard);
 			
 			this.choiceOfPlayer1 = null;
 			this.choiceOfPlayer2 = null;
