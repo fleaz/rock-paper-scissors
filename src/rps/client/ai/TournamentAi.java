@@ -317,7 +317,7 @@ public class TournamentAi implements GameListener {
 	 * max-Function of the minimax algorithm.
 	 * 
 	 * @param board
-	 * @param depth
+	 * @param startTime
 	 * @param alpha
 	 * @param beta
 	 * @return
@@ -338,7 +338,7 @@ public class TournamentAi implements GameListener {
 		for(Move move: BasicAi.getPossibleMoves(board, this.player)) {
 			// skip empty moves (no valid action)
 			if(move == null) {
-				continue;
+				return v;
 			}
 			
 			// update state
@@ -360,7 +360,7 @@ public class TournamentAi implements GameListener {
 	 * min-Function of the minimax algorithm
 	 * 
 	 * @param board
-	 * @param depth
+	 * @param startTime
 	 * @param alpha
 	 * @param beta
 	 * @return
@@ -381,7 +381,7 @@ public class TournamentAi implements GameListener {
 		for(Move move: BasicAi.getPossibleMoves(board, getOpponent())) {
 			// skip empty moves (no valid action)
 			if(move == null) {
-				continue;
+				return v;
 			}
 			
 			// update state
@@ -746,8 +746,8 @@ public class TournamentAi implements GameListener {
 	 * 
 	 * The method checks whether the AI has no movable figures left and the
 	 * opponent has only one figure left (the flag) or two figures left and
-	 * the flag was not discovered yet (then the opponent has only his trap
-	 * and flag remaining.
+	 * the trap was not discovered yet (then the opponent has only his trap
+	 * and flag remaining).
 	 * 
 	 * @param board
 	 * @return
