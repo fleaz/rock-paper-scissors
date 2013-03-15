@@ -416,7 +416,7 @@ public class GamePane {
 			if (this.oldBoard[game.getLastMove().getTo()] != null){
 				if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP){
 					memePane.setVisible(true);
-					sndTrap.start();
+					sndTrap.run();
 					to = FigureKind.TRAP;
 				}
 				else{
