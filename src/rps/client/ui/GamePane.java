@@ -407,7 +407,7 @@ public class GamePane {
 	}
 
 	/**
-	 * Creates and sends a combat log.
+	 * Creates a combat log.
 	 */
 	public void printFight() {
 		FigureKind to;
