@@ -246,6 +246,19 @@ public class GameImpl implements Game {
 				offender = this.listener2;
 				defender = this.listener1;
 			}
+			
+			// discover lastMove figures
+			Figure[] oldBoard = this.lastMove.getOldField();
+			int indexFrom = this.lastMove.getFrom();
+			int indexTo = this.lastMove.getTo();
+			
+			if(oldBoard[indexFrom] != null) {
+				oldBoard[indexFrom].setDiscovered();
+			}
+			
+			if(oldBoard[indexTo] != null) {
+				oldBoard[indexTo].setDiscovered();
+			}
 						
 			// evaluate result
 			// update board
@@ -425,28 +438,126 @@ public class GameImpl implements Game {
 	 * checks whether any movable figures are left
 	 * 
 	 * @return
+	 * @throws RemoteException 
 	 */
-	private boolean movableFiguresLeft() {
-		for(Figure figure: this.board) {
-			if(figure != null) {
-				if(figure.getKind().isMovable()) {
-					return true;
-				}
+	private boolean movableFiguresLeft() throws RemoteException {
+		return movableFiguresLeftByPlayer(null);
+	}
+	
+	private boolean movableFiguresLeftByPlayer(Player p) throws RemoteException {
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null) {
+				if(p == null || board[i].belongsTo(p))
+					// blocked in the left-down corner
+					if(i == 0 
+					&& rightFieldIsOwnUnmovableFigure(i, p) 
+					&& underFieldIsOwnUnmovableFigure(i, p)) {
+						continue;
+					}
+				
+					// blocked in the right-down corner
+					if(i == 6 
+					&& leftFieldIsOwnUnmovableFigure(i, p) 
+					&& underFieldIsOwnUnmovableFigure(i, p)) {
+						continue;
+					}
+					
+					// blocked in the left-up corner
+					if(i == 35 
+					&& rightFieldIsOwnUnmovableFigure(i, p) 
+					&& aboveFieldIsOwnUnmovableFigure(i, p)) {
+						continue;
+					}
+					
+					// blocked in the right-up corner
+					if(i == 41 
+					&& leftFieldIsOwnUnmovableFigure(i, p) 
+					&& aboveFieldIsOwnUnmovableFigure(i, p)) {
+						continue;
+					}
+					
+					if(board[i].getKind().isMovable()) {
+						return true;
+					}
 			}
 		}
 		
 		return false;
 	}
 	
-	private boolean movableFiguresLeftByPlayer(Player p) {
-		for(Figure figure: this.board) {
-			if(figure != null) {
-				if(figure.getKind().isMovable() && figure.belongsTo(p)) {
-					return true;
-				}
-			}
+	/**
+	 * Returns whether the field left of i blocks i to move there.
+	 * 
+	 * @param i
+	 * @param p
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean leftFieldIsOwnUnmovableFigure(int i, Player p) throws RemoteException {
+		Figure figure = null;
+		try {
+			figure = board[i-1];
+		} catch(IndexOutOfBoundsException e) {
+			return false;
 		}
 		
-		return false;
+		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+	}
+	
+	/**
+	 * Returns whether the field right of i blocks i to move there.
+	 * 
+	 * @param i
+	 * @param p
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean rightFieldIsOwnUnmovableFigure(int i, Player p) throws RemoteException {
+		Figure figure = null;
+		try {
+			figure = board[i+1];
+		} catch(IndexOutOfBoundsException e) {
+			return false;
+		}
+		
+		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+	}
+	
+	/**
+	 * Returns whether the field above i blocks i to move there.
+	 * 
+	 * @param i
+	 * @param p
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean aboveFieldIsOwnUnmovableFigure(int i, Player p) throws RemoteException {
+		Figure figure = null;
+		try {
+			figure = board[i-7];
+		} catch(IndexOutOfBoundsException e) {
+			return false;
+		}
+		
+		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
+	}
+	
+	/**
+	 * Returns whether the field under i blocks i to move there.
+	 * 
+	 * @param i
+	 * @param p
+	 * @return
+	 * @throws RemoteException
+	 */
+	private boolean underFieldIsOwnUnmovableFigure(int i, Player p) throws RemoteException {
+		Figure figure = null;
+		try {
+			figure = board[i+7];
+		} catch(IndexOutOfBoundsException e) {
+			return false;
+		}
+		
+		return (figure == null || figure.belongsTo(getOpponent(p)) || figure.getKind().isMovable());
 	}
 }
