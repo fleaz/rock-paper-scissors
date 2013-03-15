@@ -19,6 +19,8 @@ import rps.game.data.Player;
  */
 public class TournamentAi implements GameListener {
 
+	private static final int DEPTH = 6;
+
 	/*
 	 * Time limits for tournament mode.
 	 * 
@@ -58,6 +60,11 @@ public class TournamentAi implements GameListener {
 
 	private boolean isChoiceAfterDrawnFightProvided;
 	private boolean lastMoveWasAnAttack;
+	
+	/*
+	 * minimax statistic
+	 */
+	int depth, prunes;
 
 	/**
 	 * Create tournament AI.
@@ -184,6 +191,7 @@ public class TournamentAi implements GameListener {
 		}
 
 		Move move;
+		
 		try {
 			move = minimax(this.game.getField(), moveCalculationStartedAt);
 		} catch(StackOverflowError e) {
@@ -192,8 +200,8 @@ public class TournamentAi implements GameListener {
 			// provide a random move to continue the game
 			move = BasicAi.getPossibleMoves(this.game.getField(), this.player)[0];
 		}
-		this.game.move(this.player, move.getFrom(), move.getTo());
 		
+		this.game.move(this.player, move.getFrom(), move.getTo());
 		this.movesCounter++;
 	}
 
@@ -278,6 +286,54 @@ public class TournamentAi implements GameListener {
 		return "Tournament AI";
 	}
 	
+	public int alphabeta(Figure[] board, long startTime, int depth, int alpha, int beta, Player player) throws RemoteException {
+		System.out.println(depth);
+		if(depth == 6 || terminalTest(board) || System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
+			return utility(board);
+		}
+		
+		int score;
+		Move[] actions = BasicAi.getPossibleMoves(board, player);
+		if(player.equals(getPlayer())) {
+			for(Move action: actions) {
+				if(action == null) {
+					continue;
+				}
+			
+				Figure[] newBoard = performMove(board, action);
+			
+			
+				score = alphabeta(newBoard, startTime, depth+1, alpha, beta, getOpponent());
+				if(score > alpha) {
+					alpha = score;
+				}
+				if(alpha >= beta) {
+					return alpha;
+				}
+			}
+			
+			return alpha;
+		} else {
+			for(Move action: actions) {
+				if(action == null) {
+					continue;
+				}	
+			
+				Figure[] newBoard = performMove(board, action);
+				
+				score = alphabeta(newBoard, startTime, depth+1, alpha, beta, getPlayer());
+				if(score < beta) {
+					beta = score;
+				}
+				if(alpha >= beta) {
+					return beta;
+				}
+			}
+			
+			return beta;
+		}
+	}
+	
 
 	/**
 	 * minimax algorithm
@@ -289,19 +345,17 @@ public class TournamentAi implements GameListener {
 	 * @throws RemoteException
 	 */
 	public Move minimax(Figure[] board, long startTime) throws RemoteException {
-		Figure[] newBoard;
+		Figure[] newBoard = replaceHiddenFiguresWithPossibleRealFigures(board);;
+		
 		int score = Integer.MIN_VALUE;
 		Move result = null;
-		
-		board = replaceHiddenFiguresWithPossibleRealFigures(board);
-		
-		for(Move move: BasicAi.getPossibleMoves(board, this.player)) {
+
+		for(Move move: BasicAi.getPossibleMoves(newBoard, this.player)) {
 			if(move == null) {
 				continue;
 			} 
 			
-			newBoard = performMove(board, move);
-			int minScore = minValue(newBoard, startTime, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			int minScore = minValue(performMove(newBoard, move), startTime, 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
 			if(minScore >= score) {
 				result = move;
@@ -323,34 +377,26 @@ public class TournamentAi implements GameListener {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int maxValue(Figure[] board, long startTime, int alpha, int beta) throws RemoteException {
-		// end-state reached?
-		if(terminalTest(board)) {
-			return utility(board);
-		}
-		// stop recursion
-		else if(System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
+	public int maxValue(Figure[] board, long startTime, int depth, int alpha, int beta) throws RemoteException {
+		if(depth == DEPTH || terminalTest(board) || System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
 			return utility(board);
 		}
 		
 		int v = Integer.MIN_VALUE;
-		
+
 		for(Move move: BasicAi.getPossibleMoves(board, this.player)) {
 			// skip empty moves (no valid action)
 			if(move == null) {
 				continue;
 			}
 			
-			// update state
-			Figure[] newBoard = performMove(board, move);
-			
 			// evaluate
-			v = Math.max(v, minValue(newBoard, startTime, alpha, beta));
+			v = Math.max(v, minValue(performMove(board, move), startTime, depth+1, alpha, beta));
 			if(v >= beta) {
 				return v;
-			} else {
-				alpha = Math.max(alpha, v);
 			}
+				
+			alpha = Math.max(alpha, v);
 		}
 		
 		return v;
@@ -366,13 +412,8 @@ public class TournamentAi implements GameListener {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public int minValue(Figure[] board, long startTime, int alpha, int beta) throws RemoteException {
-		// end-state reached?
-		if(terminalTest(board)) {
-			return utility(board);
-		}
-		// stop recursion
-		else if(System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
+	public int minValue(Figure[] board, long startTime, int depth, int alpha, int beta) throws RemoteException {
+		if(depth == DEPTH || terminalTest(board) || System.nanoTime()-startTime >= 750000L * this.maxDurationForMoveInMilliSeconds) {
 			return utility(board);
 		}
 		
@@ -384,16 +425,13 @@ public class TournamentAi implements GameListener {
 				continue;
 			}
 			
-			// update state
-			Figure[] newBoard = performMove(board, move);
-			
 			// evaluate
-			v = Math.min(v, maxValue(newBoard, startTime, alpha, beta));
+			v = Math.min(v, maxValue(performMove(board, move), startTime, depth+1, alpha, beta));
 			if(v <= alpha) {
 				return v;
-			} else {
-				beta = Math.min(beta, v);
 			}
+				
+			beta = Math.min(beta, v);
 		}
 		
 		return v;
@@ -423,58 +461,71 @@ public class TournamentAi implements GameListener {
 	 * @throws RemoteException 
 	 */
 	public int utility(Figure[] board) throws RemoteException {
-		int result = 0;
-
 		// return a static value if the game is over
 		if(gameIsLost(board)) {
-			result = Integer.MIN_VALUE;
+			return Integer.MIN_VALUE;
 		} else if(gameIsDefinitlyWon(board)) {
-			result = Integer.MAX_VALUE;
+			return Integer.MAX_VALUE;
 		} else if(gameIsDrawn(board)) {
-			result = 0;
+			return 0;
 		}
-		// use a heuristic to score an unfinished game
-		else {
-			
-			for(int i=0; i<board.length; i++) {
-				if(board[i] != null) {
-					if(board[i].belongsTo(getPlayer())) {
-						
-						if(movesCounter < 7) {//andere Bewertung für die ersten 7 züge -> Aufbau
-							//je weiter vorne eine figur steht, desto höher ihre bewertung
-							if(i<7) { // letzte reihe
-								result += 80;
-							}
-							else if(i<14) { // vorletzte Reihe
-								result += 70;
-							}
-							else if(i<21) { // 4. Reihe
-								result += 60;
-							}
-							else if(i<28) { // 3. Reihe
-								result -= Math.abs(i - 24); //entfernung vom mittelfeld wird abgezogen -> Ai startet das Vorziehen über die Mitte
-								result += 50;
-							}
-							else if(i<35) { //2. Reihe
-								result += 30;
-							}
-						}
-						else { //im weiteren spielverlauf (ab 8. Zug)
-							//jede reihe gleichwertig, hauptsache nach vorne
-							for(int a=35; a>i; a-=7) {
-								result++;
-							}							
-						}
-						
-						result += 10000; // +10000 für jede eigene figur auf dem Feld
-					} else {
-						result -= 10000; // -10000 für jede gegnerische figur auf dem Feld
-					}
-				}
-			}			
+		// use a heuristic to score an unfinished game	
+		
+		int result = 0;
+		
+		// get flag position
+		int flagPosition = 0;
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null && board[i].belongsTo(getPlayer()) && board[i].getKind() == FigureKind.FLAG) {
+				flagPosition = i;
+				break;
+			}
 		}
 		
+		int totalFlagDistance = 0, totalDistanceToAllOpponentFigures = 0, rowSum = 0;
+		int ownFigureCount = 0, opponentFigureCount = 0;
+		for(int i=0; i<board.length; i++) {
+			if(board[i] != null) {
+				if(board[i].belongsTo(getPlayer())) {
+					ownFigureCount++;
+					rowSum += i / 7;
+				} else {
+					totalFlagDistance += distance(flagPosition, i);
+					opponentFigureCount++;
+					
+					for(int j=0; j<board.length; j++) {
+						if(board[j] != null && board[j].belongsTo(getOpponent())) {
+							totalDistanceToAllOpponentFigures += distance(j, i);
+						}
+					}
+				}
+			}
+		}
+		
+		result += 3 * totalFlagDistance / opponentFigureCount;
+		result += 2 * ownFigureCount;
+		result -= 20 * opponentFigureCount;
+		result -= 3 * totalDistanceToAllOpponentFigures / ownFigureCount / opponentFigureCount;
+		result += 10 * rowSum / ownFigureCount;
+		
 		return result;
+	}
+	
+	/**
+	 * Returns the amount of moves to come from a to b.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static int distance(int a, int b) {
+		int columnOfA = a % 7;
+		int columnOfB = b % 7;
+		
+		int columnDistance = Math.abs(columnOfA-columnOfB);
+		int rowDistance = Math.abs((a-columnOfA)-(b-columnOfB)) / 7;
+		
+		return columnDistance + rowDistance;
 	}
 	
 	/**
