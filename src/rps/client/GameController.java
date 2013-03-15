@@ -3,13 +3,18 @@ package rps.client;
 import static rps.network.NetworkUtil.hostNetworkGame;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import rps.client.ui.GamePane;
 import rps.game.Game;
+import rps.game.data.Figure;
+import rps.game.data.FigureKind;
 import rps.game.data.Player;
+import rps.highscore.Highscore;
+import rps.highscore.Score;
 import rps.network.GameRegistry;
 import rps.network.NetworkUtil;
 
@@ -26,6 +31,8 @@ public class GameController implements GameListener {
 	private Game game;
 	
 	private JFrame finalScreen = new JFrame();
+	
+	private int moveCounter = 0;
 	
 	
 	public Player getPlayer() {
@@ -115,6 +122,50 @@ public class GameController implements GameListener {
 		}
 	}
 	
+	private int calculateScore(){
+		int score=0;
+		
+		try {
+			Figure[] board = this.game.getField();
+			
+			for(int i=0;i<board.length;i++){
+				if(board[i] == null){
+					continue;
+				}
+				else{
+					if(board[i].belongsTo(this.player)){
+						if(board[i].getKind() == FigureKind.TRAP){ // My trap
+							score-=3;
+						}else{
+							score+=2;
+						}
+					}
+					else{
+						if(board[i].getKind() == FigureKind.TRAP){ // Opponents trap
+							score+=5;
+						}else{
+							score--;
+						}
+					}
+				}
+				
+			}
+	
+			System.out.println(Integer.toString(moveCounter));
+			System.out.println(Integer.toString(score));
+			score*=30;
+			score = score - this.moveCounter;
+			
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		if (score >0){
+			return score;
+		}
+		else{
+			return 0;
+		}
+	}
 	@Override
 	public void chatMessage(Player sender, String message) throws RemoteException {
 		gamePane.receivedMessage(sender, message);
@@ -145,6 +196,7 @@ public class GameController implements GameListener {
 	@Override
 	public void figureMoved() throws RemoteException {
 		gamePane.printTurnInfo("Warten auf anderen Spieler");
+		this.moveCounter++;
 		gamePane.lastMoveArrow();
 	}
 
@@ -180,10 +232,16 @@ public class GameController implements GameListener {
 		gamePane.redraw();
 		int n = JOptionPane.showConfirmDialog(
 			    this.finalScreen,
-			    "Herzlichen Glückwunsch. Sie haben gewonnen."+
+			    "Herzlichen Glückwunsch. Sie haben mit "+calculateScore()+" Punkten gewonnen\n"+
 				"Möchten sie ein neues Spiel starten?",
 			    "Game over",
 			    JOptionPane.YES_NO_OPTION);
+		Highscore score = new Highscore();
+		try {
+			score.insertHighscore(new Score(this.player.getNick(),calculateScore(),this.game.getOpponent(player).getNick()));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		this.playAgain(n);
 	}
 
