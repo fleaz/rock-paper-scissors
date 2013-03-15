@@ -190,9 +190,11 @@ public class GameImpl implements Game {
 			this.initialChoiceOfPlayer1 = null;
 			this.initialChoiceOfPlayer2 = null;
 			
-			// inform listeners about the game start
-			this.listener1.startGame();
-			this.listener2.startGame();
+			if(result != AttackResult.DRAW) {
+				// inform listeners about the game start
+				this.listener1.startGame();
+				this.listener2.startGame();
+			}
 		}
 	}
 
@@ -228,10 +230,6 @@ public class GameImpl implements Game {
 				provideNextMove(movingPlayer);
 			}
 		} else { // attack
-			// inform listeners
-			this.listener1.figureAttacked();
-			this.listener2.figureAttacked();
-			
 			// get result
 			AttackResult result;
 			GameListener offender, defender;
@@ -289,6 +287,10 @@ public class GameImpl implements Game {
 					this.informAboutGameDrawn();
 				}
 			}
+			
+			// inform listeners
+			this.listener1.figureAttacked();
+			this.listener2.figureAttacked();
 		}	
 	}
 
@@ -343,12 +345,6 @@ public class GameImpl implements Game {
 				this.listener2.provideChoiceAfterFightIsDrawn();
 			}
 			
-			// inform listeners about attack
-			if(result != AttackResult.DRAW) {
-				this.listener1.figureAttacked();
-				this.listener2.figureAttacked();
-			}
-			
 			// update last move
 			Figure[] oldBoard = this.getLastMove().getOldField();
 			oldBoard[indexFrom] = offenderFigure;
@@ -357,6 +353,9 @@ public class GameImpl implements Game {
 			
 			this.choiceOfPlayer1 = null;
 			this.choiceOfPlayer2 = null;
+			
+			this.listener1.figureAttacked();
+			this.listener2.figureAttacked();
 		}
 	}
 

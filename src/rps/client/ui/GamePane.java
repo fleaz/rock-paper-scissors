@@ -413,27 +413,28 @@ public class GamePane {
 		FigureKind to;
 		try {
 			oldBoard = game.getLastMove().getOldField();
-
-			if (this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP) {
-				memePane.setVisible(true);
-				sndTrap.start();
-				to = FigureKind.TRAP;
-			} else {
-				to = this.oldBoard[game.getLastMove().getTo()].getKind();
-			}
-
-			FigureKind from = this.oldBoard[game.getLastMove().getFrom()]
-					.getKind();
-
-			if (this.oldBoard[game.getLastMove().getFrom()]
-					.belongsTo(this.player)) {
-				printLog(this.player.getNick() + " greift an");
-				printLog(from + " gegen " + to);
-				printLog("---");
-			} else {
-				printLog(game.getOpponent(this.player).getNick() + " greift an");
-				printLog(from + " gegen " + to);
-				printLog("---");
+			if (this.oldBoard[game.getLastMove().getTo()] != null){
+				if(this.oldBoard[game.getLastMove().getTo()].getKind() == FigureKind.TRAP){
+					memePane.setVisible(true);
+					sndTrap.start();
+					to = FigureKind.TRAP;
+				}
+				else{
+					to = this.oldBoard[game.getLastMove().getTo()].getKind();
+				}
+				
+				FigureKind from = this.oldBoard[game.getLastMove().getFrom()].getKind();
+				
+				if(this.oldBoard[game.getLastMove().getFrom()].belongsTo(this.player)){
+					printLog(this.player.getNick() + " greift an");
+					printLog(from+ " gegen " + to);
+					printLog("---");
+				}
+				else{
+					printLog(game.getOpponent(this.player).getNick() + " greift an");
+					printLog(from+ " gegen " + to);
+					printLog("---");
+				}
 			}
 		} catch (RemoteException re) {
 			// RemoteException
