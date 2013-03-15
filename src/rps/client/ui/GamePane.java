@@ -705,7 +705,10 @@ public class GamePane {
 		}
 		if (chosen) {
 
-			if (pos1 != pos2) {
+			if ((pos1 != pos2) && ((this.arrows[pos1].getIcon() == this.arrowUp) || 
+					(this.arrows[pos1].getIcon() == this.arrowRight) ||
+					(this.arrows[pos1].getIcon() == this.arrowLeft) ||
+					(this.arrows[pos1].getIcon() == this.arrowDown))) {
 				try {
 					game.move(this.player, pos2, pos1);
 				} catch (RemoteException re) {
