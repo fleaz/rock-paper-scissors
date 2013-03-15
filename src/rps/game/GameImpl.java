@@ -160,6 +160,9 @@ public class GameImpl implements Game {
 			this.listener1.provideInitialChoice();
 			this.listener2.provideInitialChoice();
 		}
+		
+		// reset lastMove from previous games
+		this.lastMove = null;
 	}
 
 	/**

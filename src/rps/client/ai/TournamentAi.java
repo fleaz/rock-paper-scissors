@@ -60,11 +60,7 @@ public class TournamentAi implements GameListener {
 	private boolean lastMoveWasAnAttack;
 
 	/**
-<<<<<<< HEAD
-	 * Create tournament ai.
-=======
 	 * Create tournament AI.
->>>>>>> tournament-ai
 	 * 
 	 * Tournament AI uses the minimax algorithm to provide moves.
 	 * The algorithm uses alpha-beta-pruning for optimization.
@@ -157,7 +153,10 @@ public class TournamentAi implements GameListener {
 	}
 
 	@Override
-	public void startGame() throws RemoteException {}
+	public void startGame() throws RemoteException {
+		// this is needed when gameIsWon is called before figureAttacked in GameImpl
+		this.lastMoveWasAnAttack = false;
+	}
 
 	/**
 	 * Provide next move.
@@ -184,31 +183,18 @@ public class TournamentAi implements GameListener {
 			this.lastMoveWasAnAttack = false;
 		}
 
-		//"mini-eröffnungsbuch": 2 first moves für die Ai: zwei figuren in der mitte je 1 feld vor
-		/*if(firstMoves==0) {
-			if(this.game.getField()[32].getKind().isMovable()) {
-				this.game.move(this.player, 32, 25);
-			}
-			else {
-				this.game.move(this.player, 30, 23);
-			}
-			firstMoves++;
+		Move move;
+		try {
+			move = minimax(this.game.getField(), moveCalculationStartedAt);
+		} catch(StackOverflowError e) {
+			// get a move via minimax algorithm
+			// if the recursion doesnt work correctly and the stack overflows,
+			// provide a random move to continue the game
+			move = BasicAi.getPossibleMoves(this.game.getField(), this.player)[0];
 		}
-		else if(firstMoves==1) {
-			if(this.game.getField()[31].getKind().isMovable()) {
-				this.game.move(this.player, 31, 24);
-			}
-			else {
-				this.game.move(this.player, 30, 23);
-			}
-			firstMoves++;
-		}
-		*/
-		//normaler Zug
-		//else {
-			Move move = minimax(this.game.getField(), moveCalculationStartedAt);
-			this.game.move(this.player, move.getFrom(), move.getTo());
-		//}
+		this.game.move(this.player, move.getFrom(), move.getTo());
+		
+		this.movesCounter++;
 	}
 
 	@Override
@@ -223,8 +209,6 @@ public class TournamentAi implements GameListener {
 
 	@Override
 	public void figureAttacked() throws RemoteException {
-		// update statistic about discovered figures
-		// updateDiscoveredStatistic(this.game.getLastMove());
 		this.lastMoveWasAnAttack = true;
 	}
 
@@ -324,8 +308,7 @@ public class TournamentAi implements GameListener {
 				score = minScore;
 			}
 		}
-
-		movesCounter++;
+		
 		return result;
 	}
 	
@@ -699,7 +682,7 @@ public class TournamentAi implements GameListener {
 			hiddenFigures.add(FigureKind.TRAP);
 		}
 		hiddenFigures.add(FigureKind.FLAG);
-		
+
 		// shuffle array to get a random allocation
 		Collections.shuffle(hiddenFigures);
 		
@@ -919,15 +902,17 @@ public class TournamentAi implements GameListener {
 	 * 
 	 * Resets flags, counters and lists that hold the state of the AI.
 	 */
-	private void resetAI() {
+	private void resetAI() {		
 		this.discoveredFigures = new ArrayList<Figure>();
 		this.discoveredPapers = 0;
 		this.discoveredRocks = 0;
 		this.discoveredScissors = 0;
 		this.discoveredTraps = 0;
 		this.lastAttackWasDrawn = false;
+		this.lastMoveWasAnAttack = false;
 		this.lastFigureKindChoices = new ArrayList<FigureKind>();
 		this.providedInitialChoice = null;
+		this.providedChoiceAfterDrawnFight = null;
 		this.isInitialChoiceAlreadyProvided = false;
 		this.isChoiceAfterDrawnFightProvided = false;
 		this.movesCounter = 0;
