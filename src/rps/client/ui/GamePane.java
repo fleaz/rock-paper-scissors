@@ -623,8 +623,6 @@ public class GamePane {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					int position = Integer.parseInt(ae.getActionCommand());
-					// printLog("Position: " + (position % 7) + " / " +
-					// (position / 7) + " | Array: " + position);
 
 					switch (gamePhase) {
 					case "initFlag":
@@ -781,15 +779,17 @@ public class GamePane {
 	public void lastMoveArrow() {
 		this.cleanArrows();
 		try {
-			Move last = this.game.getLastMove();
-			if (last.getTo() == last.getFrom() + 7)
-				this.arrows[last.getFrom()].setIcon(arrowDown);
-			if (last.getTo() == last.getFrom() - 7)
-				this.arrows[last.getFrom()].setIcon(arrowUp);
-			if (last.getTo() == last.getFrom() + 1)
-				this.arrows[last.getFrom()].setIcon(arrowRight);
-			if (last.getTo() == last.getFrom() - 1)
-				this.arrows[last.getFrom()].setIcon(arrowLeft);
+			if(this.game.getLastMove() != null){
+				Move last = this.game.getLastMove();
+				if (last.getTo() == last.getFrom() + 7)
+					this.arrows[last.getFrom()].setIcon(arrowDown);
+				if (last.getTo() == last.getFrom() - 7)
+					this.arrows[last.getFrom()].setIcon(arrowUp);
+				if (last.getTo() == last.getFrom() + 1)
+					this.arrows[last.getFrom()].setIcon(arrowRight);
+				if (last.getTo() == last.getFrom() - 1)
+					this.arrows[last.getFrom()].setIcon(arrowLeft);
+			}
 		} catch (RemoteException re) {
 			// RemoteException
 		}

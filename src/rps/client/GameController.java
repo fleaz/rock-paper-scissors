@@ -135,26 +135,23 @@ public class GameController implements GameListener {
 				else{
 					if(board[i].belongsTo(this.player)){
 						if(board[i].getKind() == FigureKind.TRAP){ // My trap
-							score-=3;
+							score-=30;
 						}else{
-							score+=2;
+							score+=40;
 						}
 					}
 					else{
 						if(board[i].getKind() == FigureKind.TRAP){ // Opponents trap
-							score+=5;
+							score+=100;
 						}else{
-							score--;
+							score-=30;
 						}
 					}
 				}
 				
 			}
-	
-			System.out.println(Integer.toString(moveCounter));
-			System.out.println(Integer.toString(score));
-			score*=30;
-			score = score - this.moveCounter;
+			score+= 300; //additional for winning
+			score-= this.moveCounter;
 			
 		} catch (RemoteException e) {
 			e.printStackTrace();
