@@ -766,7 +766,11 @@ public class GamePane {
 						printLog("---");
 					}
 				} else {
-					printLog("Keine Züge für die " + this.board[pos1].getKind());
+					if(this.board[pos1].belongsTo(this.player)) 
+						printLog("Keine Züge für die " + this.board[pos1].getKind());
+					else
+						printLog("Nicht deine Figur.");
+					
 					printLog("---");
 				}
 			} else {
