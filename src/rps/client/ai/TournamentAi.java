@@ -60,11 +60,7 @@ public class TournamentAi implements GameListener {
 	private boolean lastMoveWasAnAttack;
 
 	/**
-<<<<<<< HEAD
-	 * Create tournament ai.
-=======
 	 * Create tournament AI.
->>>>>>> tournament-ai
 	 * 
 	 * Tournament AI uses the minimax algorithm to provide moves.
 	 * The algorithm uses alpha-beta-pruning for optimization.
